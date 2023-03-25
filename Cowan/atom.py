@@ -1,16 +1,22 @@
-from constant import *
+from .constant import *
 
 
 class Atomic:
-    def __init__(self, atomic_num, ionization):
+    def __init__(self, atomic_num: int, ionization: int):
         self.atomic_num = atomic_num  # 原子序数
         self.ionization = ionization  # 离化度
         self.atomic_symbol = ATOM[self.atomic_num][0]
         self.atomic_name = ATOM[self.atomic_num][1]
         self.electronic_num = self.atomic_num - self.ionization  # 实际的电子数量
         self.electronic_arrangement = self.get_electronic_arrangement()  # 电子排布情况
+        self.base_configuration = ' '.join(self.get_configuration())
 
     def get_electronic_arrangement(self):
+        """
+        获取电子排布
+        Returns:
+
+        """
         electronic_arrangement = {}
         temp_electronic_num = self.electronic_num
         for subshell in SUBSHELL_SEQUENCE:
@@ -24,14 +30,26 @@ class Atomic:
         return electronic_arrangement
 
     def revert_to_ground_state(self):
+        """
+        返回基态
+        Returns:
+
+        """
+        self.electronic_num = self.atomic_num - self.ionization
         self.electronic_arrangement = self.get_electronic_arrangement()
 
     def get_configuration(self):
+        """
+        获取当前的电子组态
+        Returns:
+            返回一个列表
+        """
         configuration = {}
         flag = False
         for n in range(1, 8):
             for l in range(0, n):
                 subshell_name = f'{n}{ANGULAR_QUANTUM_NUM_NAME[l]}'
+                # print(self.electronic_arrangement)
                 if subshell_name in self.electronic_arrangement.keys():
                     if self.electronic_arrangement[subshell_name] != 4 * l + 2:
                         flag = True
@@ -54,6 +72,15 @@ class Atomic:
         return configuration_list
 
     def arouse_electron(self, low_name, high_name):
+        """
+        激发电子
+        Args:
+            low_name:
+            high_name:
+
+        Returns:
+
+        """
         if low_name not in SUBSHELL_SEQUENCE:
             raise Exception(f'没有名为{low_name}的支壳层！')
         elif high_name not in SUBSHELL_SEQUENCE:
@@ -66,7 +93,7 @@ class Atomic:
         self.electronic_arrangement[low_name] -= 1
         self.electronic_arrangement[high_name] = self.electronic_arrangement.get(high_name, 0) + 1
         if self.electronic_arrangement[low_name] == 0:
-            self.electronic_arrangement = self.electronic_arrangement.pop(low_name)
+            self.electronic_arrangement.pop(low_name)
 
     def __str__(self):
         return '{: >3}  {:>2}  {:<2}   {}'.format(
@@ -74,10 +101,11 @@ class Atomic:
 
 
 if __name__ == '__main__':
-    for i in range(1, 101):
-        element = Atomic(i, 1)
-        print(element)
-    # element = Atomic(20, 1)
+    # for i in range(1, 101):
+    #     element = Atomic(i, 1)
+    #     print(element)
+    element = Atomic(50, 7)
+    print(element.base_configuration)
     # element.arouse_electron('2s', '6p')
     # print(element)
     # element.revert_to_ground_state()

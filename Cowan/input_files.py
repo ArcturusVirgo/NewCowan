@@ -1,18 +1,22 @@
 from pathlib import Path
 from typing import List
 
-from constant import *
+from .constant import *
 
 
 class In36:
-    def __init__(self, path, from_file=True):
-        if from_file:
+    def __init__(self, atomic_num, atomic_ion, path=None, ):
+        # 这两个里边装的都是格式化好的数据
+        if path:
             self.control_card, self.configuration_card = self.read_file(path)
+            self.atomic_num = int(self.configuration_card[0][0].split(' ')[-1])
+            self.atomic_ion = int(self.configuration_card[0][1].split('+')[-1])
+            self.parity = self.get_parity()
         else:
-            self.control_card, self.configuration_card = None, None
-        self.atomic_num = int(self.configuration_card[0][0].split(' ')[-1])
-        self.atomic_ion = int(self.configuration_card[0][1].split('+')[-1])
-        self.parity = self.get_parity()
+            self.control_card, self.configuration_card = [], []
+            self.atomic_num = atomic_num
+            self.atomic_ion = atomic_ion
+            self.parity = []
 
     @staticmethod
     def read_file(path):
@@ -49,18 +53,23 @@ class In36:
 
     def add_configuration(self, configuration):
         """
-        添加组态
+        添加组态，自动剔除重复数据
         Args:
             configuration: 要添加的组态
         """
-        v0 = '{:>5}'.format(self.atomic_num)
-        v1 = '{:>9}'.format(f'{self.atomic_ion + 1}{ATOM[self.atomic_num][0]}+{self.atomic_ion}')
-        v2 = '{:>7}'.format('11111')
-        v3 = '             '
-        v4 = configuration
-        self.configuration_card.append([v0, v1, v2, v3, v4])
+        if self.configuration_card:
+            temp_list = list(zip(*self.configuration_card))[-1]
+        else:
+            temp_list = []
+        if configuration not in temp_list:
+            v0 = '{:>5}'.format(self.atomic_num)
+            v1 = '{:>9}'.format(f'{self.atomic_ion + 1}{ATOM[self.atomic_num][0]}+{self.atomic_ion}')
+            v2 = '{:>7}'.format('11111')
+            v3 = '             '
+            v4 = configuration
+            self.configuration_card.append([v0, v1, v2, v3, v4])
 
-        self.update()
+            self.update()
 
     def del_configuration(self, series):
         self.configuration_card.pop(series - 1)
@@ -103,10 +112,25 @@ class In36:
     def update(self):
         self.parity = self.get_parity()
 
+    def get_in36_text(self):
+        in36 = ''
+        in36 += ''.join(self.control_card)
+        in36 += '\n'
+        for v in self.configuration_card:
+            in36 += ''.join(v)
+            in36 += '\n'
+        in36 += '   -1\n'
+        return in36
+
+    def save_as_in36(self, path):
+        path = Path(path)
+        with open(path.joinpath('in36'), 'w') as f:
+            f.write(self.get_in36_text())
+
 
 class In2:
-    def __init__(self, path, from_file=True):
-        if from_file:
+    def __init__(self, path=None):
+        if type(path) == str:
             self.input_card = self.read_file(path)
         else:
             self.input_card = None
@@ -132,6 +156,19 @@ class In2:
 
         for i in range(13, 18):
             self.input_card[i] = str(args[i - 13])
+
+    def get_in2_text(self):
+        in2 = ''
+        in2 += ''.join(self.input_card)
+        in2 += '\n'
+        in2 += '   -1\n\n'
+        return in2
+
+    def save_as_in2(self, path):
+        path = Path(path)
+        with open(path.joinpath('in2'), 'w') as f:
+            f.write(self.get_in2_text())
+        print('保存')
 
 
 if __name__ == '__main__':

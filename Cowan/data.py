@@ -1,15 +1,40 @@
+import os
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import tqdm as tqdm
+import plotly.graph_objects as go
+from plotly.offline import plot
 
 
 class ExpData:
-    def __init__(self, path):
+    def __init__(self, path, x_range=None):
+        self.plot_path = Path.cwd().joinpath('./cache/exp/exp.html').__str__()
         self.data = self.read_file(path)
+        if x_range:
+            self.x_range = x_range
+        else:
+            self.x_range = [self.data['wavelength'].min(), self.data['wavelength'].max()]
+        self.data = self.data[self.data['wavelength'] < self.x_range[1]]
+        self.data = self.data[self.data['wavelength'] > self.x_range[0]]
 
     @staticmethod
     def read_file(path):
-        return pd.read_csv(path)
+        temp_data = pd.read_csv(path, sep=';', skiprows=1, names=['wavelength', 'intensity'])
+        temp_data['intensity_normalization'] = temp_data['intensity'] / temp_data['intensity'].max()
+        # TODO 等待细化
+        return temp_data
+
+    def plot_html(self):
+
+        trace1 = go.Scatter(x=self.data['wavelength'], y=self.data['intensity'], mode='lines')
+        data = [trace1]
+        layout = go.Layout(margin=go.layout.Margin(autoexpand=False, b=15, l=30, r=0, t=0),
+                           xaxis=go.layout.XAxis(range=self.x_range), )
+        # yaxis=go.layout.YAxis(range=[self.min_strength, self.max_strength]))
+        fig = go.Figure(data=data, layout=layout)
+
+        plot(fig, filename=self.plot_path, auto_open=False)
 
 
 class CalData:
@@ -18,7 +43,8 @@ class CalData:
 
 class Widen:
     def __init__(self, path):
-        self.data_init = pd.read_csv(f'{path}spectra.dat', sep='\s+',
+        self.path = Path(path)
+        self.data_init = pd.read_csv(self.path / 'spectra.dat', sep='\s+',
                                      names=['lowenergy', 'wspecen', 'wavelength', 'gf', 'lowk',
                                             'highk', 'fjt', 'fjtp'])
 
@@ -161,3 +187,6 @@ class Widen:
 
 if __name__ == '__main__':
     pass
+    # os.chdir('../')
+    # data = ExpData('./temp_file/Merge0_0001.Raw8.txt')
+    # data.plot_html()
