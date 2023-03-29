@@ -44,27 +44,27 @@ class Atomic:
         Returns:
             返回一个列表
         """
-        configuration = {}
-        flag = False
-        for n in range(1, 8):
-            for l in range(0, n):
-                subshell_name = f'{n}{ANGULAR_QUANTUM_NUM_NAME[l]}'
-                # print(self.electronic_arrangement)
+        configuration = {}  # 按照子壳层的顺序排列的电子组态
+        flag = False  # 是否开始写入
+        for i, subshell_name in enumerate(SUBSHELL_NAME):
+            if subshell_name in self.electronic_arrangement.keys():
+                l = ANGULAR_QUANTUM_NUM_NAME.index(subshell_name[1])
+                if self.electronic_arrangement[subshell_name] != 4 * l + 2 and not flag:  # 如果不是满子壳层
+                    if i != 0:
+                        configuration[SUBSHELL_NAME[i - 1]] = self.electronic_arrangement[SUBSHELL_NAME[i - 1]]
+                    flag = True
+                if flag:
+                    configuration[subshell_name] = self.electronic_arrangement[subshell_name]
+        if not flag:
+            last_subshell_name = list(self.electronic_arrangement.keys())[-1]
+            for i, subshell_name in enumerate(SUBSHELL_NAME):
                 if subshell_name in self.electronic_arrangement.keys():
-                    if self.electronic_arrangement[subshell_name] != 4 * l + 2:
+                    if last_subshell_name == subshell_name:
+                        if i != 0:
+                            configuration[SUBSHELL_NAME[i - 1]] = self.electronic_arrangement[SUBSHELL_NAME[i - 1]]
                         flag = True
                     if flag:
                         configuration[subshell_name] = self.electronic_arrangement[subshell_name]
-        if not flag:
-            last_subshell_name = list(self.electronic_arrangement.keys())[-1]
-            for n in range(1, 8):
-                for l in range(0, n):
-                    subshell_name = f'{n}{ANGULAR_QUANTUM_NUM_NAME[l]}'
-                    if subshell_name in self.electronic_arrangement.keys():
-                        if last_subshell_name == subshell_name:
-                            flag = True
-                        if flag:
-                            configuration[subshell_name] = self.electronic_arrangement[subshell_name]
 
         configuration_list = []
         for name, num in configuration.items():
@@ -98,17 +98,3 @@ class Atomic:
     def __str__(self):
         return '{: >3}  {:>2}  {:<2}   {}'.format(
             self.atomic_num, self.atomic_symbol, self.atomic_name, ' '.join(self.get_configuration()))
-
-
-if __name__ == '__main__':
-    # for i in range(1, 101):
-    #     element = Atomic(i, 1)
-    #     print(element)
-    element = Atomic(50, 7)
-    print(element.base_configuration)
-    # element.arouse_electron('2s', '6p')
-    # print(element)
-    # element.revert_to_ground_state()
-    # element.arouse_electron('2s', '4p')
-    # print(element)
-    # element.revert_to_ground_state()

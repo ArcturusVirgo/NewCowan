@@ -1,13 +1,12 @@
-import pandas as pd
 from PySide6 import QtCore
-from PySide6.QtCore import QUrl, Qt
-from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QDialog, QTextBrowser, QVBoxLayout
+from PySide6.QtCore import QUrl, Qt, QStringListModel
+from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QDialog, QTextBrowser, QVBoxLayout, \
+    QAbstractItemView
 
-from ui.main_window_ui import Ui_MainWindow
-from cowan.constant import *
-from cowan.run import *
 from cowan.atom import *
 from cowan.data import *
+from cowan.run import *
+from ui.main_window_ui import Ui_MainWindow
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -42,12 +41,18 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.project_path: Path = Path.cwd()
-        self.atom = Atomic(1, 0)
-        self.exp_data: ExpData = None
+        # 设置默认的项目路径
+        self.project_path = None
+        self.program_path = Path.cwd()
+        # self.project_path: Path = DEFAULT_PROJECT_PATH
+
+        self.history = History()
         self.in36: In36 = In36(1, 0)
+        self.atom = Atomic(1, 0)
         self.in2 = In2()
+        self.exp_data: ExpData = None
         self.run: Run = None
+        self.cal_data: CalData = None
 
         # 初始化
         self.init_UI()
@@ -59,28 +64,52 @@ class MainWindow(QMainWindow):
         self.ui.atomic_name.addItems(list(zip(*ATOM.values()))[1])
         # 设置高能级的组态名称
         self.ui.high_configuration.addItems(SUBSHELL_SEQUENCE[1:])
+        # 设置行选择模式
+        self.ui.in36_configuration_view.setSelectionBehavior(QAbstractItemView.SelectRows)
 
         # 信号槽的连接
-        self.ui.atomic_num.activated.connect(self.slot_atomic_num)
-        self.ui.atomic_symbol.activated.connect(self.slot_atomic_symbol)
-        self.ui.atomic_name.activated.connect(self.slot_atomic_name)
-        self.ui.atomic_ion.activated.connect(self.atomic_changed)
-        self.ui.load_exp_data.triggered.connect(self.slot_load_exp_data)
-        self.ui.choose_project_path.triggered.connect(self.slot_choose_project_path)
-        self.ui.plot_exp.clicked.connect(self.slot_plot_exp)
-        self.ui.auto_write_in36.clicked.connect(self.slot_auto_write_in36)
-        self.ui.manual_write_in36.clicked.connect(self.slot_manual_write_in36)
-        self.ui.add_configuration.clicked.connect(self.slot_add_configuration)
-        self.ui.run_cowan.clicked.connect(self.slot_run_cowan)
-        self.ui.load_in36.clicked.connect(self.slot_load_in36)
-        self.ui.load_in2.clicked.connect(self.slot_load_in2)
-        self.ui.preview_in36.clicked.connect(self.slot_preview_in36)
-        self.ui.preview_in2.clicked.connect(self.slot_preview_in2)
+        # 菜单栏
+        self.ui.choose_project_path.triggered.connect(self.slot_choose_project_path)  # 选择项目路径
+        self.ui.load_exp_data.triggered.connect(self.slot_load_exp_data)  # 加载实验数据
+        # 元素选择 - 下拉框
+        self.ui.atomic_num.activated.connect(self.slot_atomic_num)  # 原子序数
+        self.ui.atomic_symbol.activated.connect(self.slot_atomic_symbol)  # 元素符号
+        self.ui.atomic_name.activated.connect(self.slot_atomic_name)  # 元素名称
+        self.ui.atomic_ion.activated.connect(self.atomic_changed)  # 离化度
+        # 按钮
+        self.ui.plot_exp.clicked.connect(self.slot_plot_exp)  # 绘制实验数据
+        self.ui.add_configuration.clicked.connect(self.slot_add_configuration)  # 添加组态
+        self.ui.run_cowan.clicked.connect(self.slot_run_cowan)  # 运行cowan
+        self.ui.load_in36.clicked.connect(self.slot_load_in36)  # 加载in36文件
+        self.ui.load_in2.clicked.connect(self.slot_load_in2)  # 加载in2文件
+        self.ui.preview_in36.clicked.connect(self.slot_preview_in36)  # 预览in36
+        self.ui.preview_in2.clicked.connect(self.slot_preview_in2)  # 预览in2
+        self.ui.configuration_move_up.clicked.connect(self.slot_configuration_move_up)  # 组态上移
+        self.ui.configuration_move_down.clicked.connect(self.slot_configuration_move_down)  # 组态下移
+        self.ui.del_configuration.clicked.connect(self.slot_del_configuration)  # 删除组态
+        self.ui.clear_history.clicked.connect(self.slot_clear_history)  # 清空运行历史
+        self.ui.add_to_selection.clicked.connect(self.slot_add_to_selection)  # 将该项目添加至库中
+        self.ui.del_selection.clicked.connect(self.slot_del_selection)  # 将该项目从库中删除
+        self.ui.load_history.clicked.connect(self.slot_load_history)  # 加载库中的项目
+        # 单选框
+        self.ui.auto_write_in36.clicked.connect(self.slot_auto_write_in36)  # 自动生成in36
+        self.ui.manual_write_in36.clicked.connect(self.slot_manual_write_in36)  # 手动输入in36
+        self.ui.crossP.clicked.connect(self.slot_crossP)  # 线状谱展宽成crossP
+        self.ui.crossNP.clicked.connect(self.slot_crossNP)  # 线状谱展宽成crossNP
 
     def slot_choose_project_path(self):
         path = QFileDialog.getExistingDirectory(self, '请选择项目路径')
         self.project_path = Path(path)
         self.ui.centralwidget.setEnabled(True)
+
+    def slot_load_exp_data(self):
+        path, types = QFileDialog.getOpenFileName(self, '请选择实验数据', Path.cwd().__str__(), '数据文件(*.txt *.csv)')
+        self.exp_data = ExpData(path)
+        self.ui.load_exp_data.setText('重新加载实验数据')
+        self.ui.plot_exp.setEnabled(True)
+        self.slot_plot_exp()
+
+        self.ui.statusbar.showMessage('已加载实验数据')
 
     def slot_atomic_num(self, index):
         # 改变其他的两个元素标识
@@ -114,15 +143,6 @@ class MainWindow(QMainWindow):
         self.ui.atomic_ion.setCurrentIndex(0)
         # Atomic 对象改变
         self.atomic_changed()
-
-    def slot_load_exp_data(self):
-        path, types = QFileDialog.getOpenFileName(self, '请选择实验数据', Path.cwd().__str__(), '文本文件(*.txt)')
-        self.exp_data = ExpData(path)
-        self.ui.load_exp_data.setText('重新加载实验数据')
-        self.ui.plot_exp.setEnabled(True)
-        self.slot_plot_exp()
-
-        self.ui.statusbar.showMessage('已加载实验数据')
 
     def slot_plot_exp(self):
         self.exp_data.plot_html()
@@ -159,13 +179,38 @@ class MainWindow(QMainWindow):
         self.update_in36_configuration_view()
 
     def slot_run_cowan(self):
+        # 获取界面中的数据
         self.get_in36_control_card()
         self.get_in2_control_card()
-        # self.in36.save_as_in36('./program/input')
-        # self.in2.save_as_in2('./program/input')
-        self.run = Run(f'{self.atom.atomic_symbol}_{self.atom.ionization}', self.in36, self.in2,
-                       self.ui.coupling_mode.currentIndex() + 1)
+        # 将数据写入文件
+        self.in36.save_as_in36('./program/input')
+        self.in2.save_as_in2('./program/input')
+        if self.project_path is None:
+            self.project_path = DEFAULT_PROJECT_PATH
+            if not self.project_path.exists():
+                self.project_path.mkdir(parents=True)
+        # 运行cowan
+        self.run = Run(f'{self.atom.atomic_symbol}_{self.atom.ionization}', self.ui.coupling_mode.currentIndex() + 1)
         self.run.run()
+        # 创建计算数据对象
+        self.cal_data = CalData(self.run.name, self.exp_data)
+        # 画图
+        self.ui.web_cal_line.load(QUrl.fromLocalFile(self.cal_data.line_path))
+        self.ui.crossP.setEnabled(True)
+        self.ui.crossNP.setEnabled(True)
+        if self.ui.crossP.isChecked():
+            self.slot_crossP()
+        elif self.ui.crossNP.isChecked():
+            self.slot_crossP()
+        # 向列表中添加内容
+        self.history.add_history(self.run.name)
+        self.update_run_history()
+
+    def slot_crossP(self):
+        self.ui.web_cal_widen.load(QUrl.fromLocalFile(self.cal_data.crossP_path))
+
+    def slot_crossNP(self):
+        self.ui.web_cal_widen.load(QUrl.fromLocalFile(self.cal_data.crossNP_path))
 
     def slot_load_in36(self):
         path, types = QFileDialog.getOpenFileName(self, '请选择in36文件', Path.cwd().__str__(), '')
@@ -236,12 +281,67 @@ class MainWindow(QMainWindow):
 
         dialog.exec()
 
+    def slot_configuration_move_up(self):
+        index = self.ui.in36_configuration_view.currentIndex().row()
+        if index != 0 and index != -1:
+            temp = self.in36.configuration_card[index]
+            self.in36.configuration_card[index] = self.in36.configuration_card[index - 1]
+            self.in36.configuration_card[index - 1] = temp
+            self.update_in36_configuration_view()
+            self.ui.in36_configuration_view.setCurrentIndex(self.ui.in36_configuration_view.model().index(index - 1, 0))
+
+    def slot_configuration_move_down(self):
+        index = self.ui.in36_configuration_view.currentIndex().row()
+        if index != len(self.in36.configuration_card) and index != -1:
+            temp = self.in36.configuration_card[index]
+            self.in36.configuration_card[index] = self.in36.configuration_card[index + 1]
+            self.in36.configuration_card[index + 1] = temp
+            self.update_in36_configuration_view()
+            self.ui.in36_configuration_view.setCurrentIndex(self.ui.in36_configuration_view.model().index(index + 1, 0))
+
+    def slot_del_configuration(self):
+        index = self.ui.in36_configuration_view.currentIndex().row()
+        if index < len(self.in36.configuration_card):
+            self.in36.del_configuration(index)
+        self.update_in36_configuration_view()
+
+    def slot_clear_history(self):
+        self.history.clear_history()
+        self.update_run_history()
+
+    def slot_add_to_selection(self):
+        name = self.ui.run_history.currentIndex().data()
+        self.history.add_selection(name)
+        self.update_selection()
+
+    def slot_del_selection(self):
+        index = self.ui.selection_list.currentIndex().row()
+        self.history.del_selection(index)
+        self.update_selection()
+
+    def slot_load_history(self):
+        name = self.ui.run_history.currentIndex().data()
+        self.in36 = In36(-1, -1, './program/bin/in36')
+        self.in2 = In2('./program/bin/in2')
+        self.atom = Atomic(self.in36.atomic_num, self.in36.atomic_ion)
+
     def update_in36_configuration_view(self):
         df = pd.DataFrame(self.in36.configuration_card, columns=['原子序数', '原子状态', '标识符', '空格', '组态'],
                           index=list(range(1, len(self.in36.configuration_card) + 1)))
-        df = df[['原子序数', '原子状态', '标识符', '组态']]
+        df['宇称'] = self.in36.parity
+        df = df[['宇称', '原子状态', '组态']]
         model = TableModel(df)
         self.ui.in36_configuration_view.setModel(model)
+
+    def update_run_history(self):
+        model = QStringListModel()
+        model.setStringList(self.history.run_history)
+        self.ui.run_history.setModel(model)
+
+    def update_selection(self):
+        model = QStringListModel()
+        model.setStringList(self.history.selection)
+        self.ui.selection_list.setModel(model)
 
     def get_in36_control_card(self):
         """
@@ -335,6 +435,7 @@ class MainWindow(QMainWindow):
         for v in SUBSHELL_SEQUENCE:
             if v not in self.atom.electronic_arrangement:
                 temp_list.append(v)
+        self.ui.high_configuration.clear()
         self.ui.high_configuration.addItems(temp_list)
         # 更新 in36 组态的表格
         self.update_in36_configuration_view()

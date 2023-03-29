@@ -1,3 +1,7 @@
+from pathlib import Path
+
+DEFAULT_PROJECT_PATH = Path().home().joinpath('cowan_data')
+
 # 原子信息
 ATOM = {1: ['H', '氢'], 2: ['He', '氦'], 3: ['Li', '锂'], 4: ['Be', '铍'], 5: ['B', '硼'],
         6: ['C', '碳'], 7: ['N', '氮'], 8: ['O', '氧'], 9: ['F', '氟'], 10: ['Ne', '氖'],
@@ -27,5 +31,13 @@ SUBSHELL_SEQUENCE = ['1s',
                      '5s', '4d', '5p',
                      '6s', '4f', '5d', '6p',
                      '7s', '5f', '6d']
+# 支壳层排布顺序
+SUBSHELL_NAME = ['1s',
+                 '2s', '2p',
+                 '3s', '3p', '3d',
+                 '4s', '4p', '4d', '4f',
+                 '5s', '5p', '5d', '5f', '5g',
+                 '6s', '6p', '6d', '6f', '6g', '6h',
+                 '7s', '7p', '7d', '7f', '7g', '7h', '7i']
 # 角量子数名称
 ANGULAR_QUANTUM_NUM_NAME = ['s', 'p', 'd', 'f', 'g', 'h', 'i']

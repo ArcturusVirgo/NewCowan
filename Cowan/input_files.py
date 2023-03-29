@@ -124,7 +124,7 @@ class In36:
 
     def save_as_in36(self, path):
         path = Path(path)
-        with open(path.joinpath('in36'), 'w') as f:
+        with open(path.joinpath('in36'), 'w', encoding='utf-8') as f:
             f.write(self.get_in36_text())
 
 
@@ -141,7 +141,7 @@ class In2:
             line = f.readline()
         line = line.strip('\n')
         if len(line) != 80:
-            line += ' ' * (80 - len(line))
+            line += ' ' * (80 - len(line) - 1)
         rules = [5, 2, 1, 2, 1, 2, 7, 1, 8, 8, 8, 4, 1, 2, 2, 2, 2, 2, 5, 5, 1, 1, 1, 1, 1, 5]
         input_card_list = []
         for rule in rules:
@@ -161,14 +161,13 @@ class In2:
         in2 = ''
         in2 += ''.join(self.input_card)
         in2 += '\n'
-        in2 += '   -1\n\n'
+        in2 += '        -1\n'
         return in2
 
     def save_as_in2(self, path):
         path = Path(path)
-        with open(path.joinpath('in2'), 'w') as f:
+        with open(path.joinpath('in2'), 'w', encoding='utf-8') as f:
             f.write(self.get_in2_text())
-        print('保存')
 
 
 if __name__ == '__main__':
