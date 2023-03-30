@@ -42,6 +42,8 @@ class Ui_MainWindow(object):
         self.action_4.setObjectName(u"action_4")
         self.choose_project_path = QAction(MainWindow)
         self.choose_project_path.setObjectName(u"choose_project_path")
+        self.show_guides = QAction(MainWindow)
+        self.show_guides.setObjectName(u"show_guides")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setEnabled(True)
@@ -1477,6 +1479,8 @@ class Ui_MainWindow(object):
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menubar)
         self.menu_2.setObjectName(u"menu_2")
+        self.menu_3 = QMenu(self.menubar)
+        self.menu_3.setObjectName(u"menu_3")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -1484,11 +1488,13 @@ class Ui_MainWindow(object):
 
         self.menubar.addAction(self.menu.menuAction())
         self.menubar.addAction(self.menu_2.menuAction())
+        self.menubar.addAction(self.menu_3.menuAction())
         self.menu.addAction(self.action)
         self.menu.addAction(self.action_2)
         self.menu.addAction(self.action_4)
         self.menu.addAction(self.choose_project_path)
         self.menu_2.addAction(self.load_exp_data)
+        self.menu_3.addAction(self.show_guides)
 
         self.retranslateUi(MainWindow)
 
@@ -1507,6 +1513,7 @@ class Ui_MainWindow(object):
         self.load_exp_data.setText(QCoreApplication.translate("MainWindow", u"\u52a0\u8f7d\u5b9e\u9a8c\u6570\u636e", None))
         self.action_4.setText(QCoreApplication.translate("MainWindow", u"\u4fdd\u5b58\u4e3a", None))
         self.choose_project_path.setText(QCoreApplication.translate("MainWindow", u"\u8bf7\u9009\u62e9\u9879\u76ee\u8def\u5f84", None))
+        self.show_guides.setText(QCoreApplication.translate("MainWindow", u"\u663e\u793a\u53c2\u8003\u7ebf", None))
         self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"\u4e0a\u4e00\u9875", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u4e0b\u4e00\u9875", None))
 #if QT_CONFIG(tooltip)
@@ -1702,5 +1709,6 @@ class Ui_MainWindow(object):
         self.crossNP.setText(QCoreApplication.translate("MainWindow", u"cross-NP", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u6587\u4ef6", None))
         self.menu_2.setTitle(QCoreApplication.translate("MainWindow", u"\u8ba1\u7b97", None))
+        self.menu_3.setTitle(QCoreApplication.translate("MainWindow", u"\u5de5\u5177", None))
     # retranslateUi
 
