@@ -1,3 +1,5 @@
+import sys
+
 from PySide6 import QtCore
 from PySide6.QtCore import QUrl, Qt, QStringListModel
 from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QDialog, QTextBrowser, QVBoxLayout, \
@@ -7,6 +9,31 @@ from cowan.atom import *
 from cowan.data import *
 from cowan.run import *
 from ui.main_window_ui import Ui_MainWindow
+from ui.vertical_line import *
+
+
+class VerticalLine(QWidget):
+    def __init__(self, x, y, height):
+        super().__init__()
+        self.ui = Ui_vertical_line()
+        self.ui.setupUi(self)
+        self.dragPos = None
+        self.ui.label.setMouseTracking(True)
+        self.setGeometry(x, y, 100, height)
+
+        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.dragPos = event.globalPosition().toPoint()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.LeftButton:
+            self.move(self.pos() + (event.globalPosition().toPoint() - self.dragPos))
+            self.dragPos = event.globalPosition().toPoint()
+            event.accept()
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -53,6 +80,7 @@ class MainWindow(QMainWindow):
         self.exp_data: ExpData = None
         self.run: Run = None
         self.cal_data: CalData = None
+        self.v_line = None
 
         # 初始化
         self.init_UI()
@@ -71,6 +99,7 @@ class MainWindow(QMainWindow):
         # 菜单栏
         self.ui.choose_project_path.triggered.connect(self.slot_choose_project_path)  # 选择项目路径
         self.ui.load_exp_data.triggered.connect(self.slot_load_exp_data)  # 加载实验数据
+        self.ui.show_guides.triggered.connect(self.slot_show_guides)  # 显示参考线
         # 元素选择 - 下拉框
         self.ui.atomic_num.activated.connect(self.slot_atomic_num)  # 原子序数
         self.ui.atomic_symbol.activated.connect(self.slot_atomic_symbol)  # 元素符号
@@ -110,6 +139,17 @@ class MainWindow(QMainWindow):
         self.slot_plot_exp()
 
         self.ui.statusbar.showMessage('已加载实验数据')
+
+    def slot_show_guides(self):
+        if self.v_line is None:
+            x, y = self.ui.exp_web.mapToGlobal(self.ui.exp_web.pos()).toTuple()
+            self.v_line = VerticalLine(x, y - 100, self.window().height() - 100)
+            self.v_line.show()
+            self.ui.show_guides.setText('隐藏参考线')
+        else:
+            self.v_line.close()
+            self.v_line = None
+            self.ui.show_guides.setText('显示参考线')
 
     def slot_atomic_num(self, index):
         # 改变其他的两个元素标识
@@ -439,6 +479,9 @@ class MainWindow(QMainWindow):
         self.ui.high_configuration.addItems(temp_list)
         # 更新 in36 组态的表格
         self.update_in36_configuration_view()
+
+    def closeEvent(self, event):
+        sys.exit()
 
 
 if __name__ == '__main__':
