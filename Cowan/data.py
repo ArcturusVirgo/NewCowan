@@ -39,6 +39,7 @@ class CalData:
     def __init__(self, name, exp_data: ExpData):
         self.path = f'./program/result/{name}'
         self.line_path = Path.cwd().joinpath(f'./cache/cal/{name}_line.html').__str__()
+        self.gauss_path = Path.cwd().joinpath(f'./cache/cal/{name}_gauss.html').__str__()
         self.crossNP_path = Path.cwd().joinpath(f'./cache/cal/{name}_crossNP.html').__str__()
         self.crossP_path = Path.cwd().joinpath(f'./cache/cal/{name}_crossP.html').__str__()
         self.widen = Widen(self.path)
@@ -47,13 +48,17 @@ class CalData:
 
     def get_html(self):
         self.plot_html('line')
+        self.plot_html('gauss')
         self.plot_html('cross-P')
         self.plot_html('cross-NP')
 
     def plot_html(self, type_):
         if type_ == 'line':
-            temp_data = self.get_line_data(self.widen.widen_data['all'][['wavelength', 'intensity']])
+            temp_data = self.get_line_data(self.widen.data_init[['wavelength', 'gf']])
             path = self.line_path
+        elif type_ == 'gauss':
+            temp_data = self.widen.widen_data['all'][['wavelength', 'gauss']]
+            path = self.gauss_path
         elif type_ == 'cross-P':
             temp_data = self.widen.widen_data['all'][['wavelength', 'cross_P']]
             path = self.crossP_path
@@ -73,19 +78,21 @@ class CalData:
         plot(fig, filename=path, auto_open=False)
 
     def get_line_data(self, origin_data):
-        origin_data = origin_data[origin_data['wavelength'] < self.exp_data.x_range[1]]
-        origin_data = origin_data[origin_data['wavelength'] > self.exp_data.x_range[0]]
+        temp_data = origin_data.copy()
+        temp_data['wavelength'] = 1239.85 / temp_data['wavelength']
+        temp_data = temp_data[temp_data['wavelength'] < self.exp_data.x_range[1]]
+        temp_data = temp_data[temp_data['wavelength'] > self.exp_data.x_range[0]]
         lambda_ = []
         strength = []
-        # if origin_data['wavelength'].min() > self.exp_data.x_range[0]:
-        #     lambda_ += [self.exp_data.x_range[0]]
-        #     strength += [0]
-        for x, y in zip(origin_data['wavelength'], origin_data['intensity']):
+        if temp_data['wavelength'].min() > self.exp_data.x_range[0]:
+            lambda_ += [self.exp_data.x_range[0]]
+            strength += [0]
+        for x, y in zip(temp_data['wavelength'], temp_data['gf']):
             lambda_ += [x, x, x]
             strength += [0, y, 0]
-        # if origin_data['wavelength'].max() < self.exp_data.x_range[1]:
-        #     lambda_ += [self.exp_data.x_range[1]]
-        #     strength += [0]
+        if temp_data['wavelength'].max() < self.exp_data.x_range[1]:
+            lambda_ += [self.exp_data.x_range[1]]
+            strength += [0]
         temp = pd.DataFrame({
             'wavelength': lambda_,
             'intensity': strength
@@ -222,7 +229,7 @@ class Widen:
         result = pd.DataFrame()
         result['wavelength'] = wave
         result['wavelength'] = 1239.85 / result['wavelength']
-        result['intensity'] = 0
+        result['gauss'] = 0
         result['cross_NP'] = 0
         result['cross_P'] = 0
         for i in range(n):

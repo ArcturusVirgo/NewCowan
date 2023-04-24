@@ -71,8 +71,8 @@ class In36:
 
             self.update()
 
-    def del_configuration(self, series):
-        self.configuration_card.pop(series - 1)
+    def del_configuration(self, index):
+        self.configuration_card.pop(index)
 
         self.update()
 

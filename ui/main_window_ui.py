@@ -28,7 +28,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1205, 789)
+        MainWindow.resize(1203, 789)
         self.action = QAction(MainWindow)
         self.action.setObjectName(u"action")
         self.action.setPriority(QAction.NormalPriority)
@@ -44,6 +44,14 @@ class Ui_MainWindow(object):
         self.choose_project_path.setObjectName(u"choose_project_path")
         self.show_guides = QAction(MainWindow)
         self.show_guides.setObjectName(u"show_guides")
+        self.action_3 = QAction(MainWindow)
+        self.action_3.setObjectName(u"action_3")
+        self.action_5 = QAction(MainWindow)
+        self.action_5.setObjectName(u"action_5")
+        self.action_6 = QAction(MainWindow)
+        self.action_6.setObjectName(u"action_6")
+        self.action_7 = QAction(MainWindow)
+        self.action_7.setObjectName(u"action_7")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setEnabled(True)
@@ -57,15 +65,15 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
-        self.pushButton_2 = QPushButton(self.centralwidget)
-        self.pushButton_2.setObjectName(u"pushButton_2")
+        self.page_up = QPushButton(self.centralwidget)
+        self.page_up.setObjectName(u"page_up")
 
-        self.horizontalLayout.addWidget(self.pushButton_2)
+        self.horizontalLayout.addWidget(self.page_up)
 
-        self.pushButton = QPushButton(self.centralwidget)
-        self.pushButton.setObjectName(u"pushButton")
+        self.page_down = QPushButton(self.centralwidget)
+        self.page_down.setObjectName(u"page_down")
 
-        self.horizontalLayout.addWidget(self.pushButton)
+        self.horizontalLayout.addWidget(self.page_down)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout)
@@ -1259,7 +1267,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.progressBar = QProgressBar(self.widget)
         self.progressBar.setObjectName(u"progressBar")
-        self.progressBar.setValue(50)
+        self.progressBar.setValue(0)
         self.progressBar.setTextVisible(False)
         self.progressBar.setOrientation(Qt.Horizontal)
         self.progressBar.setTextDirection(QProgressBar.TopToBottom)
@@ -1430,6 +1438,12 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_3.addItem(self.horizontalSpacer_2)
 
+        self.gauss = QRadioButton(self.widget_2)
+        self.gauss.setObjectName(u"gauss")
+        self.gauss.setEnabled(False)
+
+        self.horizontalLayout_3.addWidget(self.gauss)
+
         self.crossP = QRadioButton(self.widget_2)
         self.crossP.setObjectName(u"crossP")
         self.crossP.setEnabled(False)
@@ -1474,7 +1488,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1205, 22))
+        self.menubar.setGeometry(QRect(0, 0, 1203, 22))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menubar)
@@ -1489,10 +1503,9 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menu.menuAction())
         self.menubar.addAction(self.menu_2.menuAction())
         self.menubar.addAction(self.menu_3.menuAction())
-        self.menu.addAction(self.action)
-        self.menu.addAction(self.action_2)
-        self.menu.addAction(self.action_4)
-        self.menu.addAction(self.choose_project_path)
+        self.menu.addAction(self.action_5)
+        self.menu.addAction(self.action_6)
+        self.menu.addAction(self.action_7)
         self.menu_2.addAction(self.load_exp_data)
         self.menu_3.addAction(self.show_guides)
 
@@ -1514,8 +1527,12 @@ class Ui_MainWindow(object):
         self.action_4.setText(QCoreApplication.translate("MainWindow", u"\u4fdd\u5b58\u4e3a", None))
         self.choose_project_path.setText(QCoreApplication.translate("MainWindow", u"\u8bf7\u9009\u62e9\u9879\u76ee\u8def\u5f84", None))
         self.show_guides.setText(QCoreApplication.translate("MainWindow", u"\u663e\u793a\u53c2\u8003\u7ebf", None))
-        self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"\u4e0a\u4e00\u9875", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u4e0b\u4e00\u9875", None))
+        self.action_3.setText(QCoreApplication.translate("MainWindow", u"\u5c06\u8be5\u9879\u76ee\u4fdd\u5b58\u4e3a", None))
+        self.action_5.setText(QCoreApplication.translate("MainWindow", u"\u52a0\u8f7d\u9879\u76ee", None))
+        self.action_6.setText(QCoreApplication.translate("MainWindow", u"\u5c06\u8be5\u9879\u76ee\u4fdd\u5b58\u4e3a", None))
+        self.action_7.setText(QCoreApplication.translate("MainWindow", u"\u9000\u51fa", None))
+        self.page_up.setText(QCoreApplication.translate("MainWindow", u"\u4e0a\u4e00\u9875", None))
+        self.page_down.setText(QCoreApplication.translate("MainWindow", u"\u4e0b\u4e00\u9875", None))
 #if QT_CONFIG(tooltip)
         self.in36_text_1.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><br/></p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
@@ -1705,6 +1722,7 @@ class Ui_MainWindow(object):
         self.plot_exp.setText(QCoreApplication.translate("MainWindow", u"\u7ed8\u5236", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u8ba1\u7b97\u8c31", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"\u8f6e\u5ed3", None))
+        self.gauss.setText(QCoreApplication.translate("MainWindow", u"gauss", None))
         self.crossP.setText(QCoreApplication.translate("MainWindow", u"cross-P", None))
         self.crossNP.setText(QCoreApplication.translate("MainWindow", u"cross-NP", None))
         self.menu.setTitle(QCoreApplication.translate("MainWindow", u"\u6587\u4ef6", None))

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1205</width>
+    <width>1203</width>
     <height>789</height>
    </rect>
   </property>
@@ -49,14 +49,14 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_2">
+       <widget class="QPushButton" name="page_up">
         <property name="text">
          <string>上一页</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="page_down">
         <property name="text">
          <string>下一页</string>
         </property>
@@ -3211,7 +3211,7 @@
              <item>
               <widget class="QProgressBar" name="progressBar">
                <property name="value">
-                <number>50</number>
+                <number>0</number>
                </property>
                <property name="textVisible">
                 <bool>false</bool>
@@ -3464,6 +3464,16 @@
               </spacer>
              </item>
              <item>
+              <widget class="QRadioButton" name="gauss">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>gauss</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QRadioButton" name="crossP">
                <property name="enabled">
                 <bool>false</bool>
@@ -3527,7 +3537,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1205</width>
+     <width>1203</width>
      <height>22</height>
     </rect>
    </property>
@@ -3535,10 +3545,9 @@
     <property name="title">
      <string>文件</string>
     </property>
-    <addaction name="action"/>
-    <addaction name="action_2"/>
-    <addaction name="action_4"/>
-    <addaction name="choose_project_path"/>
+    <addaction name="action_5"/>
+    <addaction name="action_6"/>
+    <addaction name="action_7"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -3593,6 +3602,26 @@
   <action name="show_guides">
    <property name="text">
     <string>显示参考线</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="text">
+    <string>将该项目保存为</string>
+   </property>
+  </action>
+  <action name="action_5">
+   <property name="text">
+    <string>加载项目</string>
+   </property>
+  </action>
+  <action name="action_6">
+   <property name="text">
+    <string>将该项目保存为</string>
+   </property>
+  </action>
+  <action name="action_7">
+   <property name="text">
+    <string>退出</string>
    </property>
   </action>
  </widget>

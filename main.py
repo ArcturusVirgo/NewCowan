@@ -94,10 +94,13 @@ class MainWindow(QMainWindow):
         self.ui.high_configuration.addItems(SUBSHELL_SEQUENCE[1:])
         # 设置行选择模式
         self.ui.in36_configuration_view.setSelectionBehavior(QAbstractItemView.SelectRows)
+        # 隐藏不必要的按钮
+        self.ui.page_up.hide()
+        self.ui.page_down.hide()
 
         # 信号槽的连接
         # 菜单栏
-        self.ui.choose_project_path.triggered.connect(self.slot_choose_project_path)  # 选择项目路径
+        # self.ui.choose_project_path.triggered.connect(self.slot_choose_project_path)  # 选择项目路径
         self.ui.load_exp_data.triggered.connect(self.slot_load_exp_data)  # 加载实验数据
         self.ui.show_guides.triggered.connect(self.slot_show_guides)  # 显示参考线
         # 元素选择 - 下拉框
@@ -123,13 +126,14 @@ class MainWindow(QMainWindow):
         # 单选框
         self.ui.auto_write_in36.clicked.connect(self.slot_auto_write_in36)  # 自动生成in36
         self.ui.manual_write_in36.clicked.connect(self.slot_manual_write_in36)  # 手动输入in36
+        self.ui.gauss.clicked.connect(self.slot_gauss)  # 线状谱展宽成gauss
         self.ui.crossP.clicked.connect(self.slot_crossP)  # 线状谱展宽成crossP
         self.ui.crossNP.clicked.connect(self.slot_crossNP)  # 线状谱展宽成crossNP
 
-    def slot_choose_project_path(self):
-        path = QFileDialog.getExistingDirectory(self, '请选择项目路径')
-        self.project_path = Path(path)
-        self.ui.centralwidget.setEnabled(True)
+    # def slot_choose_project_path(self):
+    #     path = QFileDialog.getExistingDirectory(self, '请选择项目路径')
+    #     self.project_path = Path(path)
+    #     self.ui.centralwidget.setEnabled(True)
 
     def slot_load_exp_data(self):
         path, types = QFileDialog.getOpenFileName(self, '请选择实验数据', Path.cwd().__str__(), '数据文件(*.txt *.csv)')
@@ -236,15 +240,21 @@ class MainWindow(QMainWindow):
         self.cal_data = CalData(self.run.name, self.exp_data)
         # 画图
         self.ui.web_cal_line.load(QUrl.fromLocalFile(self.cal_data.line_path))
+        self.ui.gauss.setEnabled(True)
         self.ui.crossP.setEnabled(True)
         self.ui.crossNP.setEnabled(True)
         if self.ui.crossP.isChecked():
             self.slot_crossP()
         elif self.ui.crossNP.isChecked():
             self.slot_crossP()
+        elif self.ui.gauss.isChecked():
+            self.slot_gauss()
         # 向列表中添加内容
         self.history.add_history(self.run.name)
         self.update_run_history()
+
+    def slot_gauss(self):
+        self.ui.web_cal_widen.load(QUrl.fromLocalFile(self.cal_data.gauss_path))
 
     def slot_crossP(self):
         self.ui.web_cal_widen.load(QUrl.fromLocalFile(self.cal_data.crossP_path))
