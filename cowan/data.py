@@ -179,7 +179,7 @@ class Widen:
             plt.show()
 
     @staticmethod
-    def widen(data, delta=0, emin=49, emax=250, Te=25, fwhmgauss=0.27, n=2001):
+    def widen(data, delta=0, emin=91.88, emax=145.929, Te=25, fwhmgauss=0.27, n=2001):
         """
         二级函数
         Args:
@@ -197,6 +197,7 @@ class Widen:
         min_energy_index = data['lowenergy'].argmin()
         min_energy = data['lowenergy'].iloc[min_energy_index]
         min_fjt = data['fjt'].iloc[min_energy_index]
+
         data['wfwhm'] = fwhmgauss
         data = data[abs(data['wavelength']) > emin]
         data = data[abs(data['wavelength']) < emax]
@@ -226,6 +227,7 @@ class Widen:
             -abs(new_data['newwspecen'] - min_energy) * 0.124 / Te) / (2 * min_fjt + 1)
 
         wave = np.linspace(new_data['wavenew'].min(), new_data['wavenew'].max(), n)
+        # print(1239.85 / wave)
         result = pd.DataFrame()
         result['wavelength'] = wave
         result['wavelength'] = 1239.85 / result['wavelength']
@@ -243,6 +245,7 @@ class Widen:
             result.iloc[i, 1] = tt.sum()
             result.iloc[i, 2] = ss.sum()
             result.iloc[i, 3] = uu.sum()
+            print(wave[i], tt.sum(), ss.sum(), uu.sum())
         return result
 
 

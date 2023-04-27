@@ -1,43 +1,21 @@
-# from cowan.input_files import *
-#
-# in36 = In36(13, 0)
-# in36.add_configuration('1s01 2s02')
-# in36.add_configuration('1s01 2s02')
-# print(list(zip(*in36.configuration_card))[-1])
-# import pandas as pd
-#
-# # print('cowan'.split(' '))
-# # a = {1: 2, 2: 3, 3: 4}
-# # a.pop(1)
-# # print(a)
-#
-# df = pd.DataFrame({
-#     '1': [1, 2, 3, 4, 5],
-#     '2': [1, 2, 3, 4, 5]
-# })
-# for x, y in zip(df['1'], df['2']):
-#     print(x, y)
-from pathlib import Path
+import matplotlib.pyplot as plt
+import pandas as pd
 
-from cowan.atom import Atomic
-from cowan.run import Run
+df3 = pd.read_csv('F:/Project/Fortran/CLion/Cowan_F/working_directory/widen_Al_3.dat', sep='\s+', names=['x', 'y'])
+df4 = pd.read_csv('F:/Project/Fortran/CLion/Cowan_F/working_directory/widen_Al_4.dat', sep='\s+', names=['x', 'y'])
+df5 = pd.read_csv('F:/Project/Fortran/CLion/Cowan_F/working_directory/widen_Al_5.dat', sep='\s+', names=['x', 'y'])
+df6 = pd.read_csv('F:/Project/Fortran/CLion/Cowan_F/working_directory/widen_Al_6.dat', sep='\s+', names=['x', 'y'])
+exp = pd.read_csv('F:/Project/Fortran/CLion/Cowan_F/working_directory/Al_EXP.dat', sep='\s+', names=['x', 'y'])
+a = [0.08, 0.51, 0.38, 0.3]
+print(sum(a))
 
-# from pathlib import Path
-#
-# import shutil
-#
-# p = Path('./123/222').joinpath('213')
-# p.mkdir(parents=False)
-#
-# shutil.rmtree(p)
-
-#
-# l = [1, 2, 3]
-
-
-# l.pop(0)
-# print(l)
-
-element = Atomic(13, 3)
-# element.arouse_electron('2p', '3d')
-print(element.get_configuration())
+y = df3['y'] * a[0] + df4['y'] * a[1] + df5['y'] * a[2] + df6['y'] * a[3]
+# plt.plot(df3['x'], df3['y'])
+# plt.plot(df4['x'], df4['y'])
+# plt.plot(df5['x'], df5['y'])
+# plt.plot(df6['x'], df6['y'])
+y = y - y.min()
+y = y / y.max()
+plt.plot(df6['x'], y)
+plt.plot(exp['x'], exp['y'] / exp['y'].max())
+plt.show()
