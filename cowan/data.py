@@ -19,8 +19,11 @@ class ExpData:
         self.data = self.data[self.data['wavelength'] > self.x_range[0]]
 
     @staticmethod
-    def read_file(path):
-        temp_data = pd.read_csv(path, sep=',', skiprows=1, names=['wavelength', 'intensity'])
+    def read_file(path, filetype='csv'):
+        if filetype == 'csv':
+            temp_data = pd.read_csv(path, sep=',', skiprows=1, names=['wavelength', 'intensity'])
+        elif filetype == 'txt':
+            temp_data = pd.read_csv(path, sep='\s+', skiprows=1, names=['wavelength', 'intensity'])
         temp_data['intensity_normalization'] = temp_data['intensity'] / temp_data['intensity'].max()
         return temp_data
 
@@ -245,8 +248,5 @@ class Widen:
             result.iloc[i, 1] = tt.sum()
             result.iloc[i, 2] = ss.sum()
             result.iloc[i, 3] = uu.sum()
-            print(wave[i], tt.sum(), ss.sum(), uu.sum())
+
         return result
-
-
-
