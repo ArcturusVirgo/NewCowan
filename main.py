@@ -1,39 +1,12 @@
+import shutil
 import sys
+import json
 
-from PySide6 import QtCore
-from PySide6.QtCore import QUrl, Qt, QStringListModel
-from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QDialog, QTextBrowser, QVBoxLayout, \
-    QAbstractItemView
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtCore import Qt, QStringListModel
+from PySide6.QtWidgets import QAbstractItemView, QFileDialog, QDialog, QTextBrowser, QMessageBox
 
-from cowan.atom import *
-from cowan.data import *
-from cowan.run import *
-from ui.main_window_ui import Ui_MainWindow
-from ui.vertical_line import *
-
-
-class VerticalLine(QWidget):
-    def __init__(self, x, y, height):
-        super().__init__()
-        self.ui = Ui_vertical_line()
-        self.ui.setupUi(self)
-        self.dragPos = None
-        self.ui.label.setMouseTracking(True)
-        self.setGeometry(x, y, 100, height)
-
-        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.dragPos = event.globalPosition().toPoint()
-            event.accept()
-
-    def mouseMoveEvent(self, event):
-        if event.buttons() == Qt.LeftButton:
-            self.move(self.pos() + (event.globalPosition().toPoint() - self.dragPos))
-            self.dragPos = event.globalPosition().toPoint()
-            event.accept()
+from modules import *
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -62,18 +35,41 @@ class TableModel(QtCore.QAbstractTableModel):
                 return str(self._data.index[section])
 
 
-class MainWindow(QMainWindow):
-    def __init__(self):
+class VerticalLine(QWidget):
+    def __init__(self, x, y, height):
         super().__init__()
-        self.ui = Ui_MainWindow()
+        self.ui = Ui_reference_line_window()
+        self.ui.setupUi(self)
+        self.dragPos = None
+        self.ui.label.setMouseTracking(True)
+        self.setGeometry(x, y, 100, height)
+
+        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.dragPos = event.globalPosition().toPoint()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.LeftButton:
+            self.move(self.pos() + (event.globalPosition().toPoint() - self.dragPos))
+            self.dragPos = event.globalPosition().toPoint()
+            event.accept()
+
+
+class MainWindow(QMainWindow):
+    def __init__(self, path):
+        super().__init__()
+        self.ui = Ui_main_window()
         self.ui.setupUi(self)
 
         # 设置默认的项目路径
-        self.project_path = None
-        self.program_path = Path.cwd()
-        # self.project_path: Path = DEFAULT_PROJECT_PATH
+        self.PROJECT_PATH = path
+        self.WORKING_PATH = Path.cwd()
 
-        self.history = History()
+        self.history = History(self.PROJECT_PATH)
         self.in36: In36 = In36(1, 0)
         self.atom = Atomic(1, 0)
         self.in2 = In2()
@@ -84,6 +80,7 @@ class MainWindow(QMainWindow):
 
         # 初始化
         self.init_UI()
+        self.bind_slot()
 
     def init_UI(self):
         # 给元素选择器设置初始值
@@ -98,6 +95,7 @@ class MainWindow(QMainWindow):
         self.ui.page_up.hide()
         self.ui.page_down.hide()
 
+    def bind_slot(self):
         # 信号槽的连接
         # 菜单栏
         # self.ui.choose_project_path.triggered.connect(self.slot_choose_project_path)  # 选择项目路径
@@ -130,13 +128,9 @@ class MainWindow(QMainWindow):
         self.ui.crossP.clicked.connect(self.slot_crossP)  # 线状谱展宽成crossP
         self.ui.crossNP.clicked.connect(self.slot_crossNP)  # 线状谱展宽成crossNP
 
-    # def slot_choose_project_path(self):
-    #     path = QFileDialog.getExistingDirectory(self, '请选择项目路径')
-    #     self.project_path = Path(path)
-    #     self.ui.centralwidget.setEnabled(True)
-
     def slot_load_exp_data(self):
-        path, types = QFileDialog.getOpenFileName(self, '请选择实验数据', Path.cwd().__str__(), '数据文件(*.txt *.csv)')
+        path, types = QFileDialog.getOpenFileName(self, '请选择实验数据', self.PROJECT_PATH.as_posix(),
+                                                  '数据文件(*.txt *.csv)')
         self.exp_data = ExpData(path)
         self.ui.load_exp_data.setText('重新加载实验数据')
         self.ui.plot_exp.setEnabled(True)
@@ -229,10 +223,6 @@ class MainWindow(QMainWindow):
         # 将数据写入文件
         self.in36.save_as_in36('./program/input')
         self.in2.save_as_in2('./program/input')
-        if self.project_path is None:
-            self.project_path = DEFAULT_PROJECT_PATH
-            if not self.project_path.exists():
-                self.project_path.mkdir(parents=True)
         # 运行cowan
         self.run = Run(f'{self.atom.atomic_symbol}_{self.atom.ionization}', self.ui.coupling_mode.currentIndex() + 1)
         self.run.run()
@@ -494,8 +484,102 @@ class MainWindow(QMainWindow):
         sys.exit()
 
 
+class LoginWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.ui = Ui_login_window()
+        self.ui.setupUi(self)
+        self.WORKING_PATH = Path.cwd()
+
+        self.project_data: dict = {}
+        self.temp_path: str = ''
+        self.main_window: MainWindow = None
+
+        self.init_UI()
+
+    def init_UI(self):
+        # 打开并读取文件
+        file_path = self.WORKING_PATH / 'projects.json'
+        self.project_data = json.loads(file_path.read_text())
+
+        # 设置列表
+        self.update_project_list()
+        self.bind_slot()
+
+    def bind_slot(self):
+        self.ui.create_project.clicked.connect(self.slot_create_project)
+        self.ui.delete_project.clicked.connect(self.slot_delete_project)
+        self.ui.back.clicked.connect(self.slot_back)
+        self.ui.new_project.clicked.connect(self.slot_new_project)
+        self.ui.select_path.clicked.connect(self.slot_select_path)
+        self.ui.project_path.textChanged.connect(self.slot_project_path_changed)
+        self.ui.project_list.itemDoubleClicked.connect(self.slot_project_path_item_double_clicked)
+
+    def slot_create_project(self):
+        name = self.ui.project_name.text()
+        path = self.ui.project_path.text()
+        if name == '' or path == '':
+            QMessageBox.critical(self, '错误', '项目名称和路径不能为空！')
+            return
+        if name in self.project_data.keys():
+            QMessageBox.critical(self, '错误', '项目名称已存在！')
+            return
+        # 获取项目名称和路径
+        path = path.replace('/', '\\')
+        self.project_data[name] = {'path': path}
+        self.update_project_list()
+
+        # 如果目录不存在，就创建
+        path = Path(path)
+        old_path = self.WORKING_PATH / 'init_file'
+        shutil.copytree(old_path, path)
+
+        self.hide()
+        self.main_window = MainWindow(path)
+        self.main_window.show()
+
+    def slot_delete_project(self):
+        key = self.ui.project_list.currentIndex().data()
+        path = Path(self.project_data[key]['path'])
+        shutil.rmtree(path)
+        self.project_data.pop(key)
+        self.update_project_list()
+
+    def slot_back(self):
+        self.ui.stackedWidget.setCurrentIndex(0)
+
+    def slot_new_project(self):
+        self.ui.stackedWidget.setCurrentIndex(1)
+
+    def slot_select_path(self):
+        self.temp_path = QFileDialog.getExistingDirectory(self, '选择项目路径', './')
+        self.ui.project_path.setText(self.temp_path)
+
+    def slot_project_path_changed(self):
+        name = self.ui.project_path.text().split('/')[-1]
+        if name == '':
+            name = self.ui.project_path.text().split('/')[-2]
+        self.ui.project_name.setText(name)
+
+    def slot_project_path_item_double_clicked(self, index):
+        name = index.text()
+        path = self.project_data[name]['path']
+        path = Path(path)
+        self.hide()
+        self.main_window = MainWindow(path)
+        self.main_window.show()
+
+    def update_project_list(self):
+        self.ui.project_list.clear()
+        self.ui.project_list.addItems(self.project_data.keys())
+
+        # 写入json文件
+        file_path = self.WORKING_PATH / 'projects.json'
+        file_path.write_text(json.dumps(self.project_data), encoding='utf-8')
+
+
 if __name__ == '__main__':
     app = QApplication([])
-    window = MainWindow()
+    window = LoginWindow()
     window.show()
     app.exec()

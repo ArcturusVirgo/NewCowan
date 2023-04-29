@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import subprocess
@@ -34,7 +35,7 @@ class Run:
 
         # 检查文件完整性
         file_list = list(map(lambda x: x.name, self.bin_path.iterdir()))
-        necessary = ['RCN.exe', 'RCN2.exe', 'RCG.exe', 'Resonance lines.exe', 'tape72', 'tape73', 'tape74']  # 运行的必要的文件
+        necessary = ['RCN.exe', 'RCN2.exe', 'RCG.exe', 'tape72', 'tape73', 'tape74']  # 运行的必要的文件
         for file in necessary:
             if file not in file_list:
                 raise Exception('运行所需要的文件不完整')
@@ -76,9 +77,11 @@ class Run:
 
 
 class History:
-    def __init__(self):
+    def __init__(self, path):
+        self.path = path
         self.run_history = []
         self.selection = []
+        self.load()
 
     def add_history(self, name):
         self.run_history.append(name)
@@ -91,3 +94,20 @@ class History:
 
     def del_selection(self, index):
         self.selection.pop(index)
+
+    def load(self):
+        file_path = self.path / './.cowan/history.json'
+        text = file_path.read_text(encoding='utf-8')
+        temp = json.loads(text)
+        self.run_history = temp['history']
+        self.selection = temp['selection']
+
+    def save(self):
+        file_path = self.path / './.cowan/history.json'
+        f = open(file_path, 'w', encoding='utf-8')
+        temp = {
+            'history': self.run_history,
+            'selection': self.selection
+        }
+        json.dump(temp, f)
+        f.close()

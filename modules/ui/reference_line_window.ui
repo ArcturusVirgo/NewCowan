@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>vertical_line</class>
- <widget class="QWidget" name="vertical_line">
+ <class>reference_line_window</class>
+ <widget class="QWidget" name="reference_line_window">
   <property name="geometry">
    <rect>
     <x>0</x>

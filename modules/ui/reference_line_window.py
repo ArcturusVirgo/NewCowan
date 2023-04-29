@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'vertical_line.ui'
+## Form generated from reading UI file 'reference_line_window.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.4.2
 ##
@@ -18,22 +18,22 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QApplication, QFrame, QLabel, QSizePolicy,
     QVBoxLayout, QWidget)
 
-class Ui_vertical_line(object):
-    def setupUi(self, vertical_line):
-        if not vertical_line.objectName():
-            vertical_line.setObjectName(u"vertical_line")
-        vertical_line.resize(100, 800)
-        vertical_line.setMaximumSize(QSize(16777215, 16777215))
-        vertical_line.setCursor(QCursor(Qt.ArrowCursor))
-        vertical_line.setMouseTracking(True)
-        vertical_line.setWindowOpacity(1.000000000000000)
-        vertical_line.setLayoutDirection(Qt.RightToLeft)
-        vertical_line.setAutoFillBackground(False)
-        self.verticalLayout = QVBoxLayout(vertical_line)
+class Ui_reference_line_window(object):
+    def setupUi(self, reference_line_window):
+        if not reference_line_window.objectName():
+            reference_line_window.setObjectName(u"reference_line_window")
+        reference_line_window.resize(100, 800)
+        reference_line_window.setMaximumSize(QSize(16777215, 16777215))
+        reference_line_window.setCursor(QCursor(Qt.ArrowCursor))
+        reference_line_window.setMouseTracking(True)
+        reference_line_window.setWindowOpacity(1.000000000000000)
+        reference_line_window.setLayoutDirection(Qt.RightToLeft)
+        reference_line_window.setAutoFillBackground(False)
+        self.verticalLayout = QVBoxLayout(reference_line_window)
         self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.line = QFrame(vertical_line)
+        self.line = QFrame(reference_line_window)
         self.line.setObjectName(u"line")
         sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -48,7 +48,7 @@ class Ui_vertical_line(object):
 
         self.verticalLayout.addWidget(self.line, 0, Qt.AlignHCenter)
 
-        self.label = QLabel(vertical_line)
+        self.label = QLabel(reference_line_window)
         self.label.setObjectName(u"label")
         sizePolicy1 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy1.setHorizontalStretch(0)
@@ -69,13 +69,13 @@ class Ui_vertical_line(object):
         self.verticalLayout.addWidget(self.label, 0, Qt.AlignHCenter|Qt.AlignVCenter)
 
 
-        self.retranslateUi(vertical_line)
+        self.retranslateUi(reference_line_window)
 
-        QMetaObject.connectSlotsByName(vertical_line)
+        QMetaObject.connectSlotsByName(reference_line_window)
     # setupUi
 
-    def retranslateUi(self, vertical_line):
-        vertical_line.setWindowTitle(QCoreApplication.translate("vertical_line", u"Form", None))
+    def retranslateUi(self, reference_line_window):
+        reference_line_window.setWindowTitle(QCoreApplication.translate("reference_line_window", u"Form", None))
         self.label.setText("")
     # retranslateUi
 

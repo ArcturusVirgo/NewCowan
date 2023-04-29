@@ -174,7 +174,7 @@ if __name__ == '__main__':
     # a = In36('./../program/input/in36')
     # a.add_configuration('1s01 2p02')
     # a.print()
-    b = In2('./../program/input/in2')
+    b = In2('../../program/input/in2')
     print(b.__dict__)
     b.update_slater(80, 80, 80, 80, 80)
     print(b.__dict__)

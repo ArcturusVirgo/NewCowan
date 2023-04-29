@@ -1,8 +1,17 @@
+import math
+from pprint import pprint
 from typing import List
 import matplotlib.pyplot as plt
+import numpy
 import numpy as np
 import pandas
+# import pandas
 import pandas as pd
+# import numba
+# import numexpr as ne
+# import modin.pandas as pd
+# from multiprocessing import
+from concurrent.futures import ProcessPoolExecutor
 
 # 显示所有列
 pd.set_option('display.max_columns', None)
@@ -48,56 +57,60 @@ def widen(data: pandas.DataFrame,
     new_data = new_data.reindex()
     # 获取展宽所需要的数据
     new_wavelength = abs(1239.85 / (1239.85 / new_data['wavelength_ev'] - delta_lambda))  # 单位时ev
+    new_wavelength = new_wavelength.values
     new_intensity = abs(new_data['intensity'])
+    new_intensity = new_intensity.values
     flag = new_data['energy_l'] > new_data['energy_h']
     not_flag = np.bitwise_not(flag)
     temp_1 = new_data['energy_l'][flag]
     temp_2 = new_data['energy_h'][not_flag]
     new_energy = temp_1.combine_first(temp_2)
+    new_energy = new_energy.values
     temp_1 = new_data['J_l'][flag]
     temp_2 = new_data['J_h'][not_flag]
     new_J = temp_1.combine_first(temp_2)
+    new_J = new_J.values
     # 计算布居
-    population = (2 * new_J + 1) * np.exp(-np.abs(new_energy - min_energy) * 0.124 / temperature) / (2 * min_J + 1)
+    population = (2 * new_J + 1) * np.exp(-abs(new_energy - min_energy) * 0.124 / temperature) / (2 * min_J + 1)
     wave = np.linspace(min_wavelength_ev, max_wavelength_ev, n)
     result = pd.DataFrame()
     result['wavelength'] = 1239.85 / wave
-    result['gauss'] = 0
-    result['cross_NP'] = 0
-    result['cross_P'] = 0
-    for i in range(n):
-        tt = new_intensity / np.sqrt(2 * np.pi) / fwhmgauss(wave[i]) * 2.355 * np.exp(
-            -2.355 ** 2 * (new_wavelength - wave[i]) ** 2 / fwhmgauss(wave[i]) ** 2 / 2)
-        ss = (new_intensity / (2 * new_J + 1)) * 2 * fwhmgauss(wave[i]) / (
-                2 * np.pi * ((new_wavelength - wave[i]) ** 2 + np.power(2 * fwhmgauss(wave[i]), 2) / 4))
-        uu = (new_intensity * population / (2 * new_J + 1)) * 2 * fwhmgauss(wave[i]) / (
-                2 * np.pi * ((new_wavelength - wave[i]) ** 2 + np.power(2 * fwhmgauss(wave[i]), 2) / 4))
-        result.loc[i, 'gauss'] = tt.sum()
-        result.loc[i, 'cross_NP'] = ss.sum()
-        result.loc[i, 'cross_P'] = uu.sum()
+
+    def complex_cal(wave: float,
+                    new_intensity: numpy.array,
+                    fwhmgauss: float,
+                    new_wavelength: numpy.array,
+                    population: numpy.array,
+                    new_J: numpy.array):
+        tt = new_intensity / np.sqrt(2 * np.pi) / fwhmgauss * 2.355 * np.exp(
+            -2.355 ** 2 * (new_wavelength - wave) ** 2 / fwhmgauss ** 2 / 2)
+        ss = (new_intensity / (2 * new_J + 1)) * 2 * fwhmgauss / (
+                2 * np.pi * ((new_wavelength - wave) ** 2 + np.power(2 * fwhmgauss, 2) / 4))
+        uu = (new_intensity * population / (2 * new_J + 1)) * 2 * fwhmgauss / (
+                2 * np.pi * ((new_wavelength - wave) ** 2 + np.power(2 * fwhmgauss, 2) / 4))
+
+        return tt.sum(), ss.sum(), uu.sum()
+
+    res = [complex_cal(wave[i], new_intensity, fwhmgauss(wave[i]), new_wavelength, population, new_J) for i in range(n)]
+    res = list(zip(*res))
+    # pprint(res)
+    result['gauss'] = res[0]
+    result['cross_NP'] = res[1]
+    result['cross_P'] = res[2]
+
     return result
 
 
 if __name__ == '__main__':
-    df3 = pd.read_csv('F:/Project/Fortran/CLion/Cowan_F/working_directory/spectra_Al3.dat', sep='\s+', names=['energy_l', 'energy_h', 'wavelength_ev', 'intensity', 'index_l', 'index_h', 'J_l', 'J_h'])
-    df4 = pd.read_csv('F:/Project/Fortran/CLion/Cowan_F/working_directory/spectra_Al4.dat', sep='\s+', names=['energy_l', 'energy_h', 'wavelength_ev', 'intensity', 'index_l', 'index_h', 'J_l', 'J_h'])
-    df5 = pd.read_csv('F:/Project/Fortran/CLion/Cowan_F/working_directory/spectra_Al5.dat', sep='\s+', names=['energy_l', 'energy_h', 'wavelength_ev', 'intensity', 'index_l', 'index_h', 'J_l', 'J_h'])
-    df6 = pd.read_csv('F:/Project/Fortran/CLion/Cowan_F/working_directory/spectra_Al6.dat', sep='\s+', names=['energy_l', 'energy_h', 'wavelength_ev', 'intensity', 'index_l', 'index_h', 'J_l', 'J_h'])
-    w3 = widen(df3, lambda x: 0.27, 34.6, 0, [8, 14], 500)
-    w4 = widen(df4, lambda x: 0.27, 34.6, 0, [8, 14], 500)
-    w5 = widen(df5, lambda x: 0.27, 34.6, 0, [8, 14], 500)
-    w6 = widen(df6, lambda x: 0.27, 34.6, 0, [8, 14], 500)
-    res = pd.read_csv('F:/Project/Fortran/CLion/Cowan_F/working_directory/result-0.2704-1.dat', sep='\s+',
-                      names=['x', 'y'])
-    plt.plot(res['x'], res['y'], label='result')
-    plt.plot(w3['wavelength'], w3['cross_P'] * 0.1 + w4['cross_P'] * 0.5 + w5['cross_P'] * 0.3 + w6['cross_P'] * 0.1, label='Al3')
-    plt.show()
+    import time
 
-    # df = pd.read_csv('spectra.dat', sep='\s+',
-    #                  names=['energy_l', 'energy_h', 'wavelength_ev', 'intensity', 'index_l', 'index_h', 'J_l', 'J_h'],
-    #                  dtype=np.float64)
-    # df1 = widen(df, lambda x: 0.27, 34.6, 1, 0, [8, 14], 4000)
-    # plt.plot(df1['wavelength'], df1['cross_P'])
-    # df = pd.read_csv('F:/Project/Fortran/CLion/Cowan_F/working_directory/widen_Al3.dat', sep='\s+', names=['x', 'y'])
-    # plt.plot(df['x'], df['y'])
-    # plt.show()
+    df = pd.read_csv('spectra.dat', sep='\s+',
+                     names=['energy_l', 'energy_h', 'wavelength_ev', 'intensity', 'index_l', 'index_h', 'J_l', 'J_h'],
+                     dtype=np.float64)
+    s = time.time()
+    df1 = widen(df, lambda x: 0.27, 34.6, 0, [6, 309], 405)
+    print(time.time() - s)
+    plt.plot(df1['wavelength'], df1['cross_P'])
+    df = pd.read_csv('F:/Project/Fortran/CLion/Cowan_F/working_directory/widen_Al3.dat', sep='\s+', names=['x', 'y'])
+    plt.plot(df['x'], df['y'])
+    plt.show()
