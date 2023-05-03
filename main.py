@@ -68,19 +68,25 @@ class MainWindow(QMainWindow):
         # 设置默认的项目路径
         self.PROJECT_PATH = path
         self.WORKING_PATH = Path.cwd()
+        # 项目配置
+        self.project_info = {}
 
-        self.history = History(self.PROJECT_PATH)
+        self.history = Recorder(self.PROJECT_PATH)
         self.in36: In36 = In36(1, 0)
         self.atom = Atomic(1, 0)
         self.in2 = In2()
-        self.exp_data: ExpData = None
-        self.run: Run = None
-        self.cal_data: CalData = None
+        self.exp_data: ExpData | None = None
+        self.run: Run | None = None
+        self.cal_data: CalData | None = None
         self.v_line = None
 
         # 初始化
+        self.load_project_info()
         self.init_UI()
         self.bind_slot()
+
+    def load_project_info(self):
+        pass
 
     def init_UI(self):
         # 给元素选择器设置初始值
@@ -131,7 +137,19 @@ class MainWindow(QMainWindow):
     def slot_load_exp_data(self):
         path, types = QFileDialog.getOpenFileName(self, '请选择实验数据', self.PROJECT_PATH.as_posix(),
                                                   '数据文件(*.txt *.csv)')
-        self.exp_data = ExpData(path)
+        path = Path(path)
+        # 将实验数据复制到项目路径下
+        if 'csv' in path.name:
+            new_path = self.PROJECT_PATH / f'exp_data.csv'
+        elif 'txt' in path.name:
+            new_path = self.PROJECT_PATH / f'exp_data.txt'
+        else:
+            raise Exception('文件格式错误')
+        try:
+            shutil.copyfile(path, new_path)
+        except shutil.SameFileError:
+            pass
+        self.exp_data = ExpData(self.PROJECT_PATH, new_path)
         self.ui.load_exp_data.setText('重新加载实验数据')
         self.ui.plot_exp.setEnabled(True)
         self.slot_plot_exp()
@@ -224,7 +242,7 @@ class MainWindow(QMainWindow):
         self.in36.save_as_in36('./program/input')
         self.in2.save_as_in2('./program/input')
         # 运行cowan
-        self.run = Run(f'{self.atom.atomic_symbol}_{self.atom.ionization}', self.ui.coupling_mode.currentIndex() + 1)
+        self.run = Run(f'{self.atom.symbol}_{self.atom.ion}', self.ui.coupling_mode.currentIndex() + 1)
         self.run.run()
         # 创建计算数据对象
         self.cal_data = CalData(self.run.name, self.exp_data)
@@ -256,13 +274,13 @@ class MainWindow(QMainWindow):
         path, types = QFileDialog.getOpenFileName(self, '请选择in36文件', Path.cwd().__str__(), '')
         self.atomic_changed(path)
         # 改变元素选择
-        self.ui.atomic_num.setCurrentIndex(self.atom.atomic_num - 1)
-        self.ui.atomic_name.setCurrentIndex(self.atom.atomic_num - 1)
-        self.ui.atomic_symbol.setCurrentIndex(self.atom.atomic_num - 1)
+        self.ui.atomic_num.setCurrentIndex(self.atom.num - 1)
+        self.ui.atomic_name.setCurrentIndex(self.atom.num - 1)
+        self.ui.atomic_symbol.setCurrentIndex(self.atom.num - 1)
         # 改变离化度列表
         self.ui.atomic_ion.clear()
-        self.ui.atomic_ion.addItems([str(i) for i in range(0, self.atom.atomic_num)])
-        self.ui.atomic_ion.setCurrentIndex(self.atom.ionization)
+        self.ui.atomic_ion.addItems([str(i) for i in range(0, self.atom.num)])
+        self.ui.atomic_ion.setCurrentIndex(self.atom.ion)
 
         # 配置卡
         for i in range(23):
@@ -350,7 +368,7 @@ class MainWindow(QMainWindow):
         self.update_run_history()
 
     def slot_add_to_selection(self):
-        name = self.ui.run_history.currentIndex().data()
+        name = self.ui.run_history.currentIndex().init_data()
         self.history.add_selection(name)
         self.update_selection()
 
@@ -360,7 +378,7 @@ class MainWindow(QMainWindow):
         self.update_selection()
 
     def slot_load_history(self):
-        name = self.ui.run_history.currentIndex().data()
+        name = self.ui.run_history.currentIndex().init_data()
         self.in36 = In36(-1, -1, './program/bin/in36')
         self.in2 = In2('./program/bin/in2')
         self.atom = Atomic(self.in36.atomic_num, self.in36.atomic_ion)
@@ -470,10 +488,11 @@ class MainWindow(QMainWindow):
         # 更新低能级的组态
         self.ui.low_configuration.clear()
         self.ui.high_configuration.clear()
-        self.ui.low_configuration.addItems(list(self.atom.electronic_arrangement.keys()))
+        self.ui.low_configuration.addItems(list(self.atom.electron_arrangement.keys()))
+        self.ui.low_configuration.setCurrentIndex(len(self.atom.electron_arrangement.keys()) - 1)
         temp_list = []
         for v in SUBSHELL_SEQUENCE:
-            if v not in self.atom.electronic_arrangement:
+            if v not in self.atom.electron_arrangement:
                 temp_list.append(v)
         self.ui.high_configuration.clear()
         self.ui.high_configuration.addItems(temp_list)
@@ -539,7 +558,7 @@ class LoginWindow(QWidget):
         self.main_window.show()
 
     def slot_delete_project(self):
-        key = self.ui.project_list.currentIndex().data()
+        key = self.ui.project_list.currentIndex().init_data()
         path = Path(self.project_data[key]['path'])
         shutil.rmtree(path)
         self.project_data.pop(key)
@@ -580,6 +599,7 @@ class LoginWindow(QWidget):
 
 if __name__ == '__main__':
     app = QApplication([])
-    window = LoginWindow()
+    # window = LoginWindow()  # 启动登陆页面
+    window = MainWindow(Path('F:/Cowan/Al'))  # 启动主界面
     window.show()
     app.exec()

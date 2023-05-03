@@ -1072,7 +1072,7 @@ class Ui_main_window(object):
         self.gridLayout.addWidget(self.label_7, 0, 3, 1, 1)
 
         self.atomic_num = QComboBox(self.widget)
-        self.atomic_num.setObjectName(u"atomic_num")
+        self.atomic_num.setObjectName(u"num")
         sizePolicy3 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy3.setHorizontalStretch(0)
         sizePolicy3.setVerticalStretch(0)
@@ -1083,7 +1083,7 @@ class Ui_main_window(object):
         self.gridLayout.addWidget(self.atomic_num, 1, 0, 1, 1)
 
         self.atomic_name = QComboBox(self.widget)
-        self.atomic_name.setObjectName(u"atomic_name")
+        self.atomic_name.setObjectName(u"name")
         sizePolicy4 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         sizePolicy4.setHorizontalStretch(0)
         sizePolicy4.setVerticalStretch(0)
@@ -1094,7 +1094,7 @@ class Ui_main_window(object):
         self.gridLayout.addWidget(self.atomic_name, 1, 1, 1, 1)
 
         self.atomic_symbol = QComboBox(self.widget)
-        self.atomic_symbol.setObjectName(u"atomic_symbol")
+        self.atomic_symbol.setObjectName(u"symbol")
         self.atomic_symbol.setMaximumSize(QSize(50, 16777215))
 
         self.gridLayout.addWidget(self.atomic_symbol, 1, 2, 1, 1)
