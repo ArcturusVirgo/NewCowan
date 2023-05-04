@@ -2924,10 +2924,16 @@
                <item row="1" column="3">
                 <widget class="QComboBox" name="atomic_ion">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Minimum">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>50</width>
+                   <height>0</height>
+                  </size>
                  </property>
                  <property name="maximumSize">
                   <size>
@@ -3115,11 +3121,6 @@
                  <height>16777215</height>
                 </size>
                </property>
-               <item>
-                <property name="text">
-                 <string>1s</string>
-                </property>
-               </item>
               </widget>
              </item>
              <item>
@@ -3205,23 +3206,46 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_6">
              <item>
-              <widget class="QProgressBar" name="progressBar">
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>展宽温度</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="temperature_1">
+               <property name="minimumSize">
+                <size>
+                 <width>63</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="minimum">
+                <double>1.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>1000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
                <property name="value">
-                <number>0</number>
+                <double>25.600000000000001</double>
                </property>
-               <property name="textVisible">
-                <bool>false</bool>
-               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_7">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
-               <property name="textDirection">
-                <enum>QProgressBar::TopToBottom</enum>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
                </property>
-               <property name="format">
-                <string>%p%</string>
-               </property>
-              </widget>
+              </spacer>
              </item>
              <item>
               <widget class="QPushButton" name="run_cowan">
@@ -3340,53 +3364,17 @@
          <widget class="QWidget" name="widget_2" native="true">
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_8">
-             <item>
-              <widget class="QLabel" name="label">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>实验谱</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_7">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="plot_exp">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="acceptDrops">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string>绘制</string>
-               </property>
-               <property name="checkable">
-                <bool>false</bool>
-               </property>
-               <property name="checked">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            <widget class="QLabel" name="label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>实验谱</string>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QWebEngineView" name="exp_web">
@@ -3487,7 +3475,7 @@
                 <string>cross-P</string>
                </property>
                <property name="checked">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
               </widget>
              </item>
@@ -3498,6 +3486,9 @@
                </property>
                <property name="text">
                 <string>cross-NP</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
                </property>
               </widget>
              </item>

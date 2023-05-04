@@ -1,16 +1,19 @@
-from concurrent.futures import ProcessPoolExecutor
+# from pathlib import Path
+#
+# import pandas as pd
+# import plotly.graph_objects as go
+# from matplotlib import pyplot as plt
+# from plotly.offline import plot
+#
+# df = pd.DataFrame({'x': [1, 2, 3, 4, 5], 'y': [1, 2, 3, 4, 5]})
+#
+# trace1 = go.Heatmap(x=df.columns, y=df.index, z=df.values)
+# data = [trace1]
+# layout = go.Layout()
+# fig = go.Figure(data=data, layout=layout)
+# plot(fig, filename=Path.cwd().joinpath('a.html').as_posix(), auto_open=True)
 
-def ffunc():
-    def fun(i):
-        print(i)
-        res = 1
-        for j in range(1, 10000000):
-            res += j
+import
 
-    pool = ProcessPoolExecutor()
-    for i in range(10):
-        pool.submit(fun, i)
-    pool.shutdown()
-
-if __name__ == '__main__':
-    ffunc()
+i = datetime.datetime.now()  # 获取当前时间
+print('今天是{}月{}日{}点{}分{}秒'.format(i.month, i.day, i.hour, i.minute, i.second))

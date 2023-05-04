@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from concurrent.futures import ProcessPoolExecutor
 from modules import *
+from tqdm import tqdm
 
 # in36 = In36()
 # in2 = In2()
@@ -23,58 +24,60 @@ a = Atomic(13, 0)
 sp = SpectraAdd(ph, a, exp, [w3, w4, w5, w6])
 
 if __name__ == '__main__':
-    import time
 
-    start = time.time()
-
-    Te_num = 100
-    Ne_num = 100
-    Te = np.linspace(20, 50, Te_num)
-    # Ne = np.linspace(1e21, 2.3e22, step)
-    # Ne = np.array([1e17, 1e18, 1e19, 1e20, 1e21, 1e22, 1e23])
-    temp = np.linspace(1, 10, Ne_num // 6).tolist()
-    Ne = []
-    for i in range(17, 23):
-        Ne += list(map(lambda x: x * 10 ** i, temp))
-    print(Ne)
-
-    res = []
-    # 多进程 ---------------------------------------------
-    pool = ProcessPoolExecutor(os.cpu_count() - 1)
-
-    tasks_out = []
-    for n in Ne:
-        tasks_in = []
-        for t in Te:
-            temp_task = pool.submit(sp.get_add_data, t, n)
-            tasks_in.append(temp_task)
-        tasks_out.append(tasks_in)
-
-    pool.shutdown()
-
-    for tasks in tasks_out:
-        temp = []
-        for task in tasks:
-            temp.append(task.result()[1])
-        res.append(temp)
-
-    # 单进程 ---------------------------------------------
-    # for n in Ne:
-    #     temp = []
-    #     for t in Te:
-    #         temp.append(sp.get_add_data(t, n)[1])
-    #     res.append(temp)
-
-    print(time.time() - start)
-    # 结果展示
-    Z = np.array(res)
-    plt.imshow(Z, cmap='coolwarm')
-    plt.xticks(range(len(Te)), list(map(lambda x: '{:.4f}'.format(x), Te)), rotation=90)
-    plt.yticks(range(len(Ne)), list(map(lambda x: '{:.4e}'.format(x), Ne)))
-    plt.show()
-
-    # sp.get_add_data(44.3, 1e22)
+    # 计算多个 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    # import time
     #
-    # plt.plot(sp.result['wavelength'], sp.result['intensity'] / sp.result['intensity'].max())
-    # plt.plot(sp.exp_data.data['wavelength'], sp.exp_data.data['intensity'] / sp.exp_data.data['intensity'].max())
-    # plt.show()
+    # start = time.time()
+    # Te_num = 10
+    # Ne_num = 40
+    # Te = np.linspace(33.33, 36.67, Te_num)
+    # temp = np.linspace(1, 10, Ne_num // 6)
+    # Ne = []
+    # for i in range(20, 22):
+    #     Ne += list(map(lambda x: x * 10 ** i, temp))
+    # res = []
+    #
+    # # 多进程 ---------------------------------------------
+    # pool = ProcessPoolExecutor(os.cpu_count() - 1)
+    #
+    # tasks_out = []
+    # for n in Ne:
+    #     tasks_in = []
+    #     for t in Te:
+    #         temp_task = pool.submit(sp.get_add_data, t, n)
+    #         tasks_in.append(temp_task)
+    #     tasks_out.append(tasks_in)
+    #
+    # pool.shutdown()
+    #
+    # for tasks in tasks_out:
+    #     temp = []
+    #     for task in tasks:
+    #         temp.append(task.result()[1])
+    #     res.append(temp)
+    #
+    # # 单进程 ---------------------------------------------
+    # # for n in Ne:
+    # #     temp = []
+    # #     for t in Te:
+    # #         temp.append(sp.get_add_data(t, n)[1])
+    # #     res.append(temp)
+    #
+    # print(time.time() - start)
+    # # 结果展示
+    # Z = np.array(res)
+    # trace1 = go.Heatmap(x=list(map(lambda x: '{:.2f}'.format(x), Te)), y=list(map(lambda x: '{:.2e}'.format(x), Ne)),
+    #                     z=Z)
+    # data = [trace1]
+    # layout = go.Layout()
+    # fig = go.Figure(data=data, layout=layout)
+    # plot(fig, filename=Path.cwd().joinpath('a.html').as_posix(), auto_open=True)
+
+
+    # 单个计算 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    print(sp.get_add_data(25.6, 3.15e20)[1])
+
+    plt.plot(sp.result['wavelength'], sp.result['intensity'] / sp.result['intensity'].max())
+    plt.plot(sp.exp_data.data['wavelength'], sp.exp_data.data['intensity'] / sp.exp_data.data['intensity'].max())
+    plt.show()

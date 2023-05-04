@@ -65,6 +65,19 @@ class In36:
             self.configuration_card.append([v0, v1, v2, v3, v4])
             self.__update_parity()
 
+    def configuration_move(self, index, opt: str):
+        if opt == 'up':
+            if 1 <= index <= len(self.configuration_card):
+                self.configuration_card[index], self.configuration_card[index - 1] \
+                    = self.configuration_card[index - 1], self.configuration_card[index]
+        elif opt == 'down':
+            if 0 <= index <= len(self.configuration_card) - 2:
+                self.configuration_card[index], self.configuration_card[index + 1] \
+                    = self.configuration_card[index + 1], self.configuration_card[index]
+        else:
+            raise ValueError('opt must be "up" or "down"')
+        self.__update_parity()
+
     def del_configuration(self, index):
         self.configuration_card.pop(index)
         self.__update_parity()
@@ -79,7 +92,7 @@ class In36:
         in36 += '   -1\n'
         return in36
 
-    def save_as_in36(self, path):
+    def save_as_in36(self, path: Path):
         with open(path, 'w', encoding='utf-8') as f:
             f.write(self.get_in36_text())
 

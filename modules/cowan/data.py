@@ -13,6 +13,12 @@ from .atom import Atomic
 
 class ExpData:
     def __init__(self, project_path: Path, filepath: Path):
+        """
+        实验数据
+        Args:
+            project_path: 项目路径
+            filepath: 实验谱的文件路径
+        """
         self.plot_path = (project_path / 'figure/exp.html').as_posix()
         self.filepath: Path = filepath
 
@@ -27,9 +33,6 @@ class ExpData:
         设置x轴范围
         Args:
             x_range: x轴范围，单位是nm
-
-        Returns:
-
         """
         self.x_range = x_range
         self.data = self.data[(self.data['wavelength'] < self.x_range[1]) &
@@ -66,6 +69,13 @@ class ExpData:
 
 class CalData:
     def __init__(self, project_path: Path, exp_data: ExpData, name):
+        """
+
+        Args:
+            project_path: 项目路径
+            exp_data: 实验数据类
+            name: 计算的名称
+        """
         self.name = name
         self.exp_data = exp_data
         self.plot_path = (project_path / f'figure/line/{self.name}.html').as_posix()
@@ -155,9 +165,6 @@ class Widen:
                 列标题依次为：energy_l, energy_h, wavelength_ev, intensity, index_l, index_h, J_l, J_h
                 分别代表：下态能量，上态能量，波长，强度，下态序号，上态序号，下态J值，上态J值
             temperature (float): 等离子体温度
-            delta_lambda: 谱线的整体偏移，单位是nm
-            n: 展宽时的波长点的个数，即精度
-            flag (bool): 是否保存至 self.widen_data
 
         Returns:
             返回一个DataFrame，包含了展宽后的数据
@@ -211,6 +218,7 @@ class Widen:
         result['cross_P'] = res[2]
         if save_in_memory:
             self.widen_data = result
+            self.plot_widen()
         return result
 
     def widen_by_group(self, temperature):
@@ -235,6 +243,7 @@ class Widen:
                 continue
             temp_data[f'{index[0]}-{index[1]}'] = temp_result
         self.grouped_widen_data = temp_data
+        self.plot_widen_by_group()
 
     def plot_widen(self):
         self.__plot_html(self.widen_data, self.plot_path_gauss, 'wavelength', 'gauss')
@@ -297,7 +306,7 @@ class SpectraAdd:
         self.result: pd.DataFrame | None = None
 
     def get_add_data(self, temperature, electron_density):
-        abundance = self.atom.get_ion_abundance(temperature, electron_density)
+        abundance = self.atom.get_ion_abundance2(temperature, electron_density)
         for widen in self.widen_list:
             # if widen.widen_data is None:
             widen.widen(temperature)
@@ -312,7 +321,7 @@ class SpectraAdd:
         return res, similarity
 
     def get_similarity(self):
-        return self.similarity(self.exp_data.data[['wavelength', 'intensity']],
+        return self.similarity2(self.exp_data.data[['wavelength', 'intensity']],
                                self.result[['wavelength', 'intensity']])
 
     @staticmethod
@@ -333,3 +342,39 @@ class SpectraAdd:
             res += min(np.sqrt((x1[i] - x2) ** 2 + (y1[i] - y2) ** 2))
         # print(res)
         return res / a_num
+
+    @staticmethod
+    def similarity2(fax: pd.DataFrame, fbx: pd.DataFrame):
+        col_names_a = fax.columns
+        col_names_b = fbx.columns
+
+        min_x = max(fax[col_names_a[0]].min(), fbx[col_names_b[0]].min())
+        max_x = min(fax[col_names_a[0]].max(), fbx[col_names_b[0]].max())
+        # min_x = 11
+        # max_x = 11.5
+
+        fax_new = fax[fax[col_names_a[0]] <= max_x]
+        fbx_new = fbx[fbx[col_names_b[0]] <= max_x]
+        fax_new = fax_new[min_x <= fax_new[col_names_a[0]]]
+        fbx_new = fbx_new[min_x <= fbx_new[col_names_b[0]]]
+
+        f1 = interp1d(fax_new[col_names_a[0]], fax_new[col_names_a[1]], fill_value="extrapolate")
+        f2 = interp1d(fbx_new[col_names_b[0]], fbx_new[col_names_b[1]], fill_value="extrapolate")
+        x = np.linspace(min_x, max_x, max(fax_new.shape[0], fbx_new.shape[0]))
+        y1 = f1(x)
+        y2 = f2(x)
+        y1 = y1 / max(y1)
+        y2 = y2 / max(y2)
+
+        dy1=np.diff(y1)
+        dy2=np.diff(y2)
+        distance = np.linalg.norm(dy1-dy2)
+        return distance
+        # y2是测量值，y1是预测值
+        # SS_reg = np.power(y1 - y2.mean(), 2).sum()
+        # SS_tot = np.power(y2 - y2.mean(), 2).sum()
+        # R2 = SS_reg / SS_tot
+        # if R2 > 1:
+        #     return 1 / R2
+        # else:
+        #     return R2

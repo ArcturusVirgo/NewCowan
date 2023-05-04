@@ -1,4 +1,6 @@
 # 原子信息
+from typing import List
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -22,7 +24,7 @@ ATOM = {1: ['H', '氢'], 2: ['He', '氦'], 3: ['Li', '锂'], 4: ['Be', '铍'], 5
         86: ['Rn', '氡'], 87: ['Fr', '钫'], 88: ['Ra', '镭'], 89: ['Ac', '锕'], 90: ['Th', '钍'],
         91: ['Pa', '镤'], 92: ['U', '铀'], 93: ['Np', '镎'], 94: ['Pu', '钚'], 95: ['Am', '镅*'],
         96: ['Cm', '锔*'], 97: ['Bk', '锫*'], 98: ['Cf', '锎*'], 99: ['Es', '锿*'], 100: ['Fm', '镄*']}
-# 支壳层排布顺序
+# 支壳层排布顺序（按照能级能量排序）
 SUBSHELL_SEQUENCE = ['1s',
                      '2s', '2p',
                      '3s', '3p',
@@ -30,7 +32,7 @@ SUBSHELL_SEQUENCE = ['1s',
                      '5s', '4d', '5p',
                      '6s', '4f', '5d', '6p',
                      '7s', '5f', '6d']
-# 支壳层排布顺序
+# 支壳层排布顺序（按照名称排序）
 SUBSHELL_NAME = ['1s',
                  '2s', '2p',
                  '3s', '3p', '3d',
@@ -51,15 +53,17 @@ IONIZATION_ENERGY = {
 class Atomic:
     def __init__(self, num: int, ion: int):
         self.num = num  # 原子序数
-        self.ion = ion  # 离化度
         self.symbol = ATOM[self.num][0]  # 元素符号
         self.name = ATOM[self.num][1]  # 元素名称
+        self.ion = ion  # 离化度
         self.electron_num = self.num - self.ion  # 实际的电子数量
         self.electron_arrangement = self.get_electron_base_arrangement()  # 电子排布情况
         self.base_configuration = ' '.join(self.get_configuration())  # 基组态
 
     def get_electron_base_arrangement(self):
-        """根据当前现有电子数，获取电子基组态的核外排布情况
+        """
+            根据当前现有电子数，获取电子基组态的核外排布情况
+
         Returns:
             返回一个字典，键为子壳层，值为子壳层的电子数
             例如 {
@@ -84,13 +88,16 @@ class Atomic:
         return electron_arrangement
 
     def revert_to_ground_state(self):
-        """返回基态
+        """
+            将电子排布状态重置为基态基态
         """
         self.electron_num = self.num - self.ion
         self.electron_arrangement = self.get_electron_base_arrangement()
 
-    def get_configuration(self):
-        """根据当前的电子排布情况，获取当前的电子组态
+    def get_configuration(self) -> List[str]:
+        """
+            根据当前的电子排布情况，获取当前的电子组态
+
         Returns:
             返回一个列表
             例如 1. 基态：['3s02', '3p04']
@@ -124,7 +131,9 @@ class Atomic:
         return configuration_list
 
     def arouse_electron(self, low_name, high_name):
-        """ 激发电子，改变电子排布情况
+        """
+            激发电子，改变电子排布情况
+
         Args:
             low_name: 下态的支壳层名称
             high_name: 上态的支壳层名称
@@ -143,7 +152,19 @@ class Atomic:
         if self.electron_arrangement[low_name] == 0:
             self.electron_arrangement.pop(low_name)
 
-    def get_ion_abundance(self, temperature, electron_density):
+    def get_ion_abundance(self, temperature, electron_density) -> np.ndarray:
+        """
+            计算各种离子的丰度
+
+        Args:
+            temperature: 等离子体温度，单位是ev
+            electron_density: 等离子体粒子数密度
+
+        Returns:
+            返回一个列表，类型为np.ndarray，每个元素为对应离子的丰度
+            例如：[0 1 2 3 4 5 6 7 8]
+            分别代表 原子，一次离化，二次离化，三次离化，四次离化，五次离化，六次离化，七次离化，八次离化 的粒子数密度
+        """
         ion_num = np.array([i for i in range(self.num - 1)])
         ion_energy = np.array(IONIZATION_ENERGY[self.num][1:])
         electron_num = np.array([self.__get_outermost_num(i) for i in range(1, self.num)])
@@ -158,7 +179,45 @@ class Atomic:
         abundance = self.__calculate_a_over_S(ratio)
         return abundance
 
+    def get_ion_abundance2(self, temperature, electron_density):
+        ion_num = np.array([i for i in range(self.num)])
+        ion_energy = np.array(IONIZATION_ENERGY[self.num])
+        electron_num = np.array([self.__get_outermost_num(i) for i in range(self.num)])
+
+        S = (9 * 1e-6 * electron_num * np.sqrt(temperature / ion_energy) * np.exp(-ion_energy / temperature)) / (
+                ion_energy ** 1.5 * (4.88 + temperature / ion_energy))
+        Ar = 5.2 * 1e-14 * np.sqrt(ion_energy / temperature) * ion_num * (
+                0.429 + 0.5 * np.log(ion_energy / temperature) + 0.469 * np.sqrt(temperature / ion_energy))
+        A3r = 2.97 * 1e-27 * electron_num / (temperature * ion_energy ** 2 * (4.88 + temperature / ion_energy))
+
+        Co = S / (Ar + electron_density * A3r)
+        CoM = [Co[0]]
+        for i in range(1, self.num):
+            CoM.append(Co[i] * CoM[i - 1])
+        Cosum = 0
+        CoMM = []
+        for i in range(self.num):
+            CoMM.append((i + 1) * CoM[i])
+            Cosum += CoMM[i]
+        Rat = [electron_density / Cosum]
+        for i in range(1, self.num):
+            Rat.append(Co[i - 1] * Rat[i - 1])
+        Ratsum = sum(Rat)
+        aveion = electron_density / Ratsum
+        Ratio = []
+        for i in range(self.num):
+            Ratio.append(Rat[i] / Ratsum)
+        return Ratio
+
     def __get_outermost_num(self, ion: int):
+        """
+            获取离子的最外层电子数
+        Args:
+            ion: 离化度，0为原子，1为1次离化，2为2次离化，以此类推
+
+        Returns:
+            electron_num : 最外层电子数
+        """
         temp_electron_num = self.num - ion
         for n in range(1, 7):
             if temp_electron_num > 2 * n ** 2:
@@ -169,7 +228,15 @@ class Atomic:
 
     @staticmethod
     def __calculate_a_over_S(a_ratios):
-        # 计算a1, a2, ..., a_n
+        """
+            已知a1/a2, a2/a3, ..., a_n-1/a_n，计算a1/S, a2/S, ..., a_n/S，其中S=a1+a2+...+a_n
+
+        Args:
+            a_ratios: a1/a2, a2/a3, ..., a_n-1/a_n
+
+        Returns:
+            a1/S, a2/S, ..., a_n/S
+        """
         a = np.zeros(len(a_ratios) + 1)
         a[0] = 1
         for i in range(1, len(a)):
@@ -188,7 +255,14 @@ class Atomic:
         """打印原子信息
         Returns:
             返回一个字符串，格式为：
-            原子序数，元素符号，元素名称，电子组态
+            原子序数，元素符号，元素名称，当前电子排布的电子组态
         """
         return '{: >3}  {:>2}  {:<2}   {}'.format(
             self.num, self.symbol, self.name, ' '.join(self.get_configuration()))
+
+
+if __name__ == '__main__':
+    a = Atomic(13, 1)
+    aaa = a.get_ion_abundance2(25.6, 3.15e20)
+    for ii, v in enumerate(aaa):
+        print('{}: {:.4f}'.format(ii, v))

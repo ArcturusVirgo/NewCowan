@@ -17,10 +17,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QGridLayout,
-    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-    QListView, QMainWindow, QMenu, QMenuBar,
-    QProgressBar, QPushButton, QRadioButton, QSizePolicy,
+from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QFrame,
+    QGridLayout, QHBoxLayout, QHeaderView, QLabel,
+    QLineEdit, QListView, QMainWindow, QMenu,
+    QMenuBar, QPushButton, QRadioButton, QSizePolicy,
     QSpacerItem, QSpinBox, QStackedWidget, QStatusBar,
     QTabWidget, QTableView, QVBoxLayout, QWidget)
 
@@ -1072,7 +1072,7 @@ class Ui_main_window(object):
         self.gridLayout.addWidget(self.label_7, 0, 3, 1, 1)
 
         self.atomic_num = QComboBox(self.widget)
-        self.atomic_num.setObjectName(u"num")
+        self.atomic_num.setObjectName(u"atomic_num")
         sizePolicy3 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         sizePolicy3.setHorizontalStretch(0)
         sizePolicy3.setVerticalStretch(0)
@@ -1083,7 +1083,7 @@ class Ui_main_window(object):
         self.gridLayout.addWidget(self.atomic_num, 1, 0, 1, 1)
 
         self.atomic_name = QComboBox(self.widget)
-        self.atomic_name.setObjectName(u"name")
+        self.atomic_name.setObjectName(u"atomic_name")
         sizePolicy4 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         sizePolicy4.setHorizontalStretch(0)
         sizePolicy4.setVerticalStretch(0)
@@ -1094,7 +1094,7 @@ class Ui_main_window(object):
         self.gridLayout.addWidget(self.atomic_name, 1, 1, 1, 1)
 
         self.atomic_symbol = QComboBox(self.widget)
-        self.atomic_symbol.setObjectName(u"symbol")
+        self.atomic_symbol.setObjectName(u"atomic_symbol")
         self.atomic_symbol.setMaximumSize(QSize(50, 16777215))
 
         self.gridLayout.addWidget(self.atomic_symbol, 1, 2, 1, 1)
@@ -1102,8 +1102,12 @@ class Ui_main_window(object):
         self.atomic_ion = QComboBox(self.widget)
         self.atomic_ion.addItem("")
         self.atomic_ion.setObjectName(u"atomic_ion")
-        sizePolicy2.setHeightForWidth(self.atomic_ion.sizePolicy().hasHeightForWidth())
-        self.atomic_ion.setSizePolicy(sizePolicy2)
+        sizePolicy5 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Minimum)
+        sizePolicy5.setHorizontalStretch(0)
+        sizePolicy5.setVerticalStretch(0)
+        sizePolicy5.setHeightForWidth(self.atomic_ion.sizePolicy().hasHeightForWidth())
+        self.atomic_ion.setSizePolicy(sizePolicy5)
+        self.atomic_ion.setMinimumSize(QSize(50, 0))
         self.atomic_ion.setMaximumSize(QSize(50, 16777215))
 
         self.gridLayout.addWidget(self.atomic_ion, 1, 3, 1, 1)
@@ -1215,7 +1219,6 @@ class Ui_main_window(object):
         self.horizontalLayout_5.addWidget(self.label_8)
 
         self.low_configuration = QComboBox(self.widget)
-        self.low_configuration.addItem("")
         self.low_configuration.setObjectName(u"low_configuration")
         self.low_configuration.setMinimumSize(QSize(50, 0))
         self.low_configuration.setMaximumSize(QSize(50, 16777215))
@@ -1264,14 +1267,24 @@ class Ui_main_window(object):
 
         self.horizontalLayout_6 = QHBoxLayout()
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
-        self.progressBar = QProgressBar(self.widget)
-        self.progressBar.setObjectName(u"progressBar")
-        self.progressBar.setValue(0)
-        self.progressBar.setTextVisible(False)
-        self.progressBar.setOrientation(Qt.Horizontal)
-        self.progressBar.setTextDirection(QProgressBar.TopToBottom)
+        self.label_13 = QLabel(self.widget)
+        self.label_13.setObjectName(u"label_13")
 
-        self.horizontalLayout_6.addWidget(self.progressBar)
+        self.horizontalLayout_6.addWidget(self.label_13)
+
+        self.temperature_1 = QDoubleSpinBox(self.widget)
+        self.temperature_1.setObjectName(u"temperature_1")
+        self.temperature_1.setMinimumSize(QSize(63, 0))
+        self.temperature_1.setMinimum(1.000000000000000)
+        self.temperature_1.setMaximum(1000.000000000000000)
+        self.temperature_1.setSingleStep(0.100000000000000)
+        self.temperature_1.setValue(25.600000000000001)
+
+        self.horizontalLayout_6.addWidget(self.temperature_1)
+
+        self.horizontalSpacer_7 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_6.addItem(self.horizontalSpacer_7)
 
         self.run_cowan = QPushButton(self.widget)
         self.run_cowan.setObjectName(u"run_cowan")
@@ -1373,38 +1386,20 @@ class Ui_main_window(object):
         self.widget_2.setObjectName(u"widget_2")
         self.verticalLayout_2 = QVBoxLayout(self.widget_2)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.horizontalLayout_8 = QHBoxLayout()
-        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.label = QLabel(self.widget_2)
         self.label.setObjectName(u"label")
         sizePolicy2.setHeightForWidth(self.label.sizePolicy().hasHeightForWidth())
         self.label.setSizePolicy(sizePolicy2)
 
-        self.horizontalLayout_8.addWidget(self.label)
-
-        self.horizontalSpacer_7 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_8.addItem(self.horizontalSpacer_7)
-
-        self.plot_exp = QPushButton(self.widget_2)
-        self.plot_exp.setObjectName(u"plot_exp")
-        self.plot_exp.setEnabled(False)
-        self.plot_exp.setAcceptDrops(False)
-        self.plot_exp.setCheckable(False)
-        self.plot_exp.setChecked(False)
-
-        self.horizontalLayout_8.addWidget(self.plot_exp)
-
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout_8)
+        self.verticalLayout_2.addWidget(self.label)
 
         self.exp_web = QWebEngineView(self.widget_2)
         self.exp_web.setObjectName(u"exp_web")
-        sizePolicy5 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        sizePolicy5.setHorizontalStretch(0)
-        sizePolicy5.setVerticalStretch(0)
-        sizePolicy5.setHeightForWidth(self.exp_web.sizePolicy().hasHeightForWidth())
-        self.exp_web.setSizePolicy(sizePolicy5)
+        sizePolicy6 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        sizePolicy6.setHorizontalStretch(0)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.exp_web.sizePolicy().hasHeightForWidth())
+        self.exp_web.setSizePolicy(sizePolicy6)
         self.exp_web.setUrl(QUrl(u"about:blank"))
 
         self.verticalLayout_2.addWidget(self.exp_web)
@@ -1418,8 +1413,8 @@ class Ui_main_window(object):
 
         self.web_cal_line = QWebEngineView(self.widget_2)
         self.web_cal_line.setObjectName(u"web_cal_line")
-        sizePolicy5.setHeightForWidth(self.web_cal_line.sizePolicy().hasHeightForWidth())
-        self.web_cal_line.setSizePolicy(sizePolicy5)
+        sizePolicy6.setHeightForWidth(self.web_cal_line.sizePolicy().hasHeightForWidth())
+        self.web_cal_line.setSizePolicy(sizePolicy6)
         self.web_cal_line.setUrl(QUrl(u"about:blank"))
 
         self.verticalLayout_2.addWidget(self.web_cal_line)
@@ -1446,19 +1441,20 @@ class Ui_main_window(object):
         self.crossP = QRadioButton(self.widget_2)
         self.crossP.setObjectName(u"crossP")
         self.crossP.setEnabled(False)
-        sizePolicy6 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
-        sizePolicy6.setHorizontalStretch(0)
-        sizePolicy6.setVerticalStretch(0)
-        sizePolicy6.setHeightForWidth(self.crossP.sizePolicy().hasHeightForWidth())
-        self.crossP.setSizePolicy(sizePolicy6)
+        sizePolicy7 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        sizePolicy7.setHorizontalStretch(0)
+        sizePolicy7.setVerticalStretch(0)
+        sizePolicy7.setHeightForWidth(self.crossP.sizePolicy().hasHeightForWidth())
+        self.crossP.setSizePolicy(sizePolicy7)
         self.crossP.setAutoFillBackground(False)
-        self.crossP.setChecked(True)
+        self.crossP.setChecked(False)
 
         self.horizontalLayout_3.addWidget(self.crossP)
 
         self.crossNP = QRadioButton(self.widget_2)
         self.crossNP.setObjectName(u"crossNP")
         self.crossNP.setEnabled(False)
+        self.crossNP.setChecked(True)
 
         self.horizontalLayout_3.addWidget(self.crossNP)
 
@@ -1467,8 +1463,8 @@ class Ui_main_window(object):
 
         self.web_cal_widen = QWebEngineView(self.widget_2)
         self.web_cal_widen.setObjectName(u"web_cal_widen")
-        sizePolicy5.setHeightForWidth(self.web_cal_widen.sizePolicy().hasHeightForWidth())
-        self.web_cal_widen.setSizePolicy(sizePolicy5)
+        sizePolicy6.setHeightForWidth(self.web_cal_widen.sizePolicy().hasHeightForWidth())
+        self.web_cal_widen.setSizePolicy(sizePolicy6)
         self.web_cal_widen.setUrl(QUrl(u"about:blank"))
 
         self.verticalLayout_2.addWidget(self.web_cal_widen)
@@ -1689,8 +1685,6 @@ class Ui_main_window(object):
 
         self.label_14.setText(QCoreApplication.translate("main_window", u"\u65af\u83b1\u7279\u7cfb\u6570", None))
         self.label_8.setText(QCoreApplication.translate("main_window", u"\u652f\u58f3\u5c42", None))
-        self.low_configuration.setItemText(0, QCoreApplication.translate("main_window", u"1s", None))
-
         self.auto_write_in36.setText(QCoreApplication.translate("main_window", u"\u81ea\u52a8", None))
         self.manual_write_in36.setText(QCoreApplication.translate("main_window", u"\u624b\u52a8", None))
 #if QT_CONFIG(tooltip)
@@ -1709,7 +1703,7 @@ class Ui_main_window(object):
         self.configuration_edit.setText("")
         self.configuration_edit.setPlaceholderText(QCoreApplication.translate("main_window", u"\u7535\u5b50\u7ec4\u6001", None))
         self.add_configuration.setText(QCoreApplication.translate("main_window", u"\u6dfb\u52a0", None))
-        self.progressBar.setFormat(QCoreApplication.translate("main_window", u"%p%", None))
+        self.label_13.setText(QCoreApplication.translate("main_window", u"\u5c55\u5bbd\u6e29\u5ea6", None))
         self.run_cowan.setText(QCoreApplication.translate("main_window", u"\u8ba1\u7b97", None))
         self.label_9.setText(QCoreApplication.translate("main_window", u"\u8ba1\u7b97\u5386\u53f2", None))
         self.clear_history.setText(QCoreApplication.translate("main_window", u"\u6e05\u7a7a", None))
@@ -1718,7 +1712,6 @@ class Ui_main_window(object):
         self.label_10.setText(QCoreApplication.translate("main_window", u"\u5e93", None))
         self.del_selection.setText(QCoreApplication.translate("main_window", u"\u5220\u9664", None))
         self.label.setText(QCoreApplication.translate("main_window", u"\u5b9e\u9a8c\u8c31", None))
-        self.plot_exp.setText(QCoreApplication.translate("main_window", u"\u7ed8\u5236", None))
         self.label_2.setText(QCoreApplication.translate("main_window", u"\u8ba1\u7b97\u8c31", None))
         self.label_3.setText(QCoreApplication.translate("main_window", u"\u8f6e\u5ed3", None))
         self.gauss.setText(QCoreApplication.translate("main_window", u"gauss", None))
