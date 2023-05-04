@@ -12,7 +12,6 @@ class Recorder:
         self.path = path
         self.run_history = []
         self.selection = []
-        self.load()
 
     def add_history(self, name):
         self.run_history.append(name)
@@ -25,23 +24,6 @@ class Recorder:
 
     def del_selection(self, index):
         self.selection.pop(index)
-
-    def load(self):
-        file_path = self.path / './.cowan/history.json'
-        text = file_path.read_text(encoding='utf-8')
-        temp = json.loads(text)
-        self.run_history = temp['history']
-        self.selection = temp['selection']
-
-    def save(self):
-        file_path = self.path / './.cowan/history.json'
-        f = open(file_path, 'w', encoding='utf-8')
-        temp = {
-            'history': self.run_history,
-            'selection': self.selection
-        }
-        json.dump(temp, f)
-        f.close()
 
 
 class Run:

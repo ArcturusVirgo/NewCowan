@@ -13,7 +13,7 @@
 # fig = go.Figure(data=data, layout=layout)
 # plot(fig, filename=Path.cwd().joinpath('a.html').as_posix(), auto_open=True)
 
-import
-
-i = datetime.datetime.now()  # 获取当前时间
-print('今天是{}月{}日{}点{}分{}秒'.format(i.month, i.day, i.hour, i.minute, i.second))
+# import
+#
+# i = datetime.datetime.now()  # 获取当前时间
+# print('今天是{}月{}日{}点{}分{}秒'.format(i.month, i.day, i.hour, i.minute, i.second))

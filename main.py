@@ -1,39 +1,9 @@
-import shutil
 import sys
-import json
-import datetime
+import shelve
 
-from PySide6 import QtCore, QtWidgets
-from PySide6.QtCore import Qt, QStringListModel
 from PySide6.QtWidgets import QAbstractItemView, QFileDialog, QDialog, QTextBrowser, QMessageBox
 
 from modules import *
-
-
-class TableModel(QtCore.QAbstractTableModel):
-    def __init__(self, data):
-        super(TableModel, self).__init__()
-        self._data = data
-
-    def data(self, index, role):
-        if role == Qt.DisplayRole:
-            value = self._data.iloc[index.row(), index.column()]
-            return str(value)
-
-    def rowCount(self, index):
-        return self._data.shape[0]
-
-    def columnCount(self, index):
-        return self._data.shape[1]
-
-    def headerData(self, section, orientation, role):
-        # section is the index of the column/row.
-        if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
-                return str(self._data.columns[section])
-
-            if orientation == Qt.Vertical:
-                return str(self._data.index[section])
 
 
 class VerticalLine(QWidget):
@@ -61,7 +31,7 @@ class VerticalLine(QWidget):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, path):
+    def __init__(self, path, load_project=False):
         super().__init__()
         self.ui = Ui_main_window()
         self.ui.setupUi(self)
@@ -69,8 +39,6 @@ class MainWindow(QMainWindow):
         # 设置默认的项目路径
         self.PROJECT_PATH = path
         self.WORKING_PATH = Path.cwd()
-        # 项目配置
-        self.project_info = {}
 
         self.recorder = Recorder(self.PROJECT_PATH)
         self.atom: Atomic | None = None
@@ -81,15 +49,15 @@ class MainWindow(QMainWindow):
         self.cal_data: CalData | None = None
         self.widen: Widen | None = None
 
-        self.v_line = None
+        self.v_line: VerticalLine | None = None
 
         # 初始化
-        self.load_project_info()
         self.init()
         self.bind_slot()
 
-    def load_project_info(self):
-        pass
+        # 更新以上信息
+        if load_project:
+            self.load_project()
 
     def init(self):
         self.get_in36_control_card()
@@ -98,18 +66,23 @@ class MainWindow(QMainWindow):
         self.ui.atomic_num.addItems(list(map(str, ATOM.keys())))
         self.ui.atomic_symbol.addItems(list(zip(*ATOM.values()))[0])
         self.ui.atomic_name.addItems(list(zip(*ATOM.values()))[1])
-        # 设置高能级的组态名称
-        # self.ui.high_configuration.addItems(SUBSHELL_SEQUENCE[1:])
-        # 设置行选择模式
-        self.ui.in36_configuration_view.setSelectionBehavior(QAbstractItemView.SelectRows)
+        # in36组态表格相关设置
+        self.ui.in36_configuration_view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)  # 设置行选择模式
+        self.ui.in36_configuration_view.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)  # 设置表格不可编辑
+        self.ui.in36_configuration_view.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.ResizeToContents)  # 设置表格列宽自适应
         # 隐藏不必要的按钮
         # self.ui.page_up.hide()
         # self.ui.page_down.hide()
 
     def bind_slot(self):
-        # 信号槽的连接
+        # 页面切换按钮
+        self.ui.page_up.clicked.connect(lambda x: self.ui.stackedWidget.setCurrentIndex(0))
+        self.ui.page_down.clicked.connect(lambda x: self.ui.stackedWidget.setCurrentIndex(1))
+
         # 菜单栏
-        # self.ui.choose_project_path.triggered.connect(self.slot_choose_project_path)  # 选择项目路径
+        self.ui.save_project.triggered.connect(self.slot_save_project)
+        self.ui.exit_project.triggered.connect(self.slot_exit_project)
         self.ui.load_exp_data.triggered.connect(self.slot_load_exp_data)  # 加载实验数据
         self.ui.show_guides.triggered.connect(self.slot_show_guides)  # 显示参考线
         # 元素选择 - 下拉框
@@ -119,7 +92,7 @@ class MainWindow(QMainWindow):
         self.ui.atomic_ion.activated.connect(self.slot_atomic_ion)  # 离化度
         # 按钮
         self.ui.add_configuration.clicked.connect(self.slot_add_configuration)  # 添加组态
-        self.ui.run_cowan.clicked.connect(self.slot_run_cowan)  # 运行cowan
+        self.ui.run_cowan.clicked.connect(self.slot_run_cowan)  # 运行Cowan
         self.ui.load_in36.clicked.connect(self.slot_load_in36)  # 加载in36文件
         self.ui.load_in2.clicked.connect(self.slot_load_in2)  # 加载in2文件
         self.ui.preview_in36.clicked.connect(self.slot_preview_in36)  # 预览in36
@@ -135,8 +108,8 @@ class MainWindow(QMainWindow):
         self.ui.auto_write_in36.clicked.connect(self.slot_auto_write_in36)  # 自动生成in36
         self.ui.manual_write_in36.clicked.connect(self.slot_manual_write_in36)  # 手动输入in36
         self.ui.gauss.clicked.connect(self.slot_gauss)  # 线状谱展宽成gauss
-        self.ui.crossP.clicked.connect(self.slot_crossP)  # 线状谱展宽成crossP
-        self.ui.crossNP.clicked.connect(self.slot_crossNP)  # 线状谱展宽成crossNP
+        self.ui.crossP.clicked.connect(self.slot_crossp)  # 线状谱展宽成crossP
+        self.ui.crossNP.clicked.connect(self.slot_crossnp)  # 线状谱展宽成crossNP
         # 输入框
         self.ui.in2_11_e.valueChanged.connect(self.slot_in2_11_e_value_changed)  # in2 11 e
 
@@ -233,13 +206,14 @@ class MainWindow(QMainWindow):
         self.get_in36_control_card()
         self.get_in2_control_card()
         # 获取当前时间
-        current_time = datetime.datetime.now()
+        # current_time = datetime.datetime.now()
         # 创建运行对象
         self.run = Run(project_path=self.PROJECT_PATH,
-                       name='{:0>4d}{:0>2d}{:0>2d}{:0>2d}{:0>2d}{:0>2d}_{}_{}'.format(
-                           current_time.year, current_time.month, current_time.day,
-                           current_time.hour, current_time.minute, current_time.second,
-                           self.atom.symbol, self.atom.ion),
+                       # name='{:0>4d}{:0>2d}{:0>2d}{:0>2d}{:0>2d}{:0>2d}_{}_{}'.format(
+                       #     current_time.year, current_time.month, current_time.day,
+                       #     current_time.hour, current_time.minute, current_time.second,
+                       #     self.atom.symbol, self.atom.ion),
+                       name='{}_{}'.format(self.atom.symbol, self.atom.ion),
                        in36=self.in36,
                        in2=self.in2,
                        recorder=self.recorder,
@@ -265,10 +239,10 @@ class MainWindow(QMainWindow):
     def slot_gauss(self):
         self.ui.web_cal_widen.load(QUrl.fromLocalFile(self.widen.plot_path_gauss))
 
-    def slot_crossP(self):
+    def slot_crossp(self):
         self.ui.web_cal_widen.load(QUrl.fromLocalFile(self.widen.plot_path_cross_P))
 
-    def slot_crossNP(self):
+    def slot_crossnp(self):
         self.ui.web_cal_widen.load(QUrl.fromLocalFile(self.widen.plot_path_cross_NP))
 
     def slot_load_in36(self):
@@ -347,7 +321,7 @@ class MainWindow(QMainWindow):
         self.update_recorder_obj_about()
 
     def slot_add_to_selection(self):
-        name = self.ui.run_history.currentIndex().data()
+        name = self.ui.run_history_list.currentIndex().data()
         self.recorder.add_selection(name)
         self.update_recorder_obj_about()
 
@@ -359,6 +333,24 @@ class MainWindow(QMainWindow):
     def slot_load_history(self):
         pass
         # TODO
+
+    def slot_save_project(self):
+        obj_info = shelve.open(self.PROJECT_PATH.joinpath('.cowan/obj_info').as_posix())
+        obj_info['atom'] = self.atom
+        obj_info['cal_data'] = self.cal_data
+        obj_info['exp_data'] = self.exp_data
+        obj_info['in36'] = self.in36
+        obj_info['in2'] = self.in2
+        obj_info['cal_data'] = self.cal_data
+        obj_info['recorder'] = self.recorder
+        obj_info['run'] = self.run
+        obj_info['widen'] = self.widen
+        obj_info.close()
+        self.ui.statusbar.showMessage('项目保存成功！')
+
+    def slot_exit_project(self):
+        self.slot_save_project()
+        sys.exit()
 
     def get_in36_control_card(self):
         """
@@ -449,9 +441,10 @@ class MainWindow(QMainWindow):
                 temp_list.append(value)
         self.ui.high_configuration.addItems(temp_list)
         # 清空组态卡的数据
-        df = pd.DataFrame([])
-        model = TableModel(df)
-        self.ui.in36_configuration_view.setModel(model)
+        self.ui.in36_configuration_view.clear()
+        self.ui.in36_configuration_view.setRowCount(0)
+        self.ui.in36_configuration_view.setColumnCount(3)
+        self.ui.in36_configuration_view.setHorizontalHeaderLabels(['宇称', '原子状态', '组态'])
         # 更新in36对象的属性
         self.in36.atomic_num = self.atom.num
         self.in36.atomic_ion = self.atom.ion
@@ -465,8 +458,15 @@ class MainWindow(QMainWindow):
                           index=list(range(1, len(self.in36.configuration_card) + 1)))
         df['宇称'] = self.in36.parity
         df = df[['宇称', '原子状态', '组态']]
-        model = TableModel(df)
-        self.ui.in36_configuration_view.setModel(model)
+        # 更新表格
+        self.ui.in36_configuration_view.clear()
+        self.ui.in36_configuration_view.setRowCount(df.shape[0])
+        self.ui.in36_configuration_view.setColumnCount(df.shape[1])
+        self.ui.in36_configuration_view.setHorizontalHeaderLabels(df.columns)
+        for i in range(df.shape[0]):
+            for j in range(df.shape[1]):
+                item = QTableWidgetItem(str(df.iloc[i, j]))
+                self.ui.in36_configuration_view.setItem(i, j, item)
 
     def update_in2_obj_about(self):
         in2_input_name = ['in2_1', 'in2_2', 'in2_3', 'in2_4', 'in2_5', 'in2_6', 'in2_7', 'in2_8',
@@ -491,23 +491,45 @@ class MainWindow(QMainWindow):
 
     def update_widen_obj_about(self):
         if self.ui.crossP.isChecked():
-            self.slot_crossP()
+            self.slot_crossp()
         elif self.ui.crossNP.isChecked():
-            self.slot_crossNP()
+            self.slot_crossnp()
         elif self.ui.gauss.isChecked():
             self.slot_gauss()
 
     def update_recorder_obj_about(self):
         # 更新历史记录
-        model = QStringListModel()
-        model.setStringList(self.recorder.run_history)
-        self.ui.run_history.setModel(model)
+        self.ui.run_history_list.clear()
+        for value in self.recorder.run_history:
+            self.ui.run_history_list.addItem(QListWidgetItem(value))
         # 更新元素选择
-        model = QStringListModel()
-        model.setStringList(self.recorder.selection)
-        self.ui.selection_list.setModel(model)
+        self.ui.selection_list.clear()
+        for value in self.recorder.selection:
+            self.ui.selection_list.addItem(QListWidgetItem(value))
+
+    def load_project(self):
+        obj_info = shelve.open(self.PROJECT_PATH.joinpath('.cowan/obj_info').as_posix())
+        self.atom = obj_info['atom']
+        self.cal_data = obj_info['cal_data']
+        self.exp_data = obj_info['exp_data']
+        self.in36 = obj_info['in36']
+        self.in2 = obj_info['in2']
+        self.cal_data = obj_info['cal_data']
+        self.recorder = obj_info['recorder']
+        self.run = obj_info['run']
+        self.widen = obj_info['widen']
+        obj_info.close()
+        self.update_atom_obj_about()
+        self.update_in36_obj_about()
+        self.update_in2_obj_about()
+        self.update_exp_data_obj_about()
+        self.update_run_obj_about()
+        self.update_cal_data_obj_about()
+        self.update_widen_obj_about()
+        self.update_recorder_obj_about()
 
     def closeEvent(self, event):
+        self.slot_save_project()
         sys.exit()
 
 
@@ -593,7 +615,7 @@ class LoginWindow(QWidget):
         path = self.project_data[name]['path']
         path = Path(path)
         self.hide()
-        self.main_window = MainWindow(path)
+        self.main_window = MainWindow(path, True)
         self.main_window.show()
 
     def update_project_list(self):
@@ -608,6 +630,6 @@ class LoginWindow(QWidget):
 if __name__ == '__main__':
     app = QApplication([])
     # window = LoginWindow()  # 启动登陆页面
-    window = MainWindow(Path('F:/Cowan/Al'))  # 启动主界面
+    window = MainWindow(Path('F:/Cowan/Al'), True)  # 启动主界面
     window.show()
     app.exec()
