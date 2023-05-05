@@ -490,6 +490,7 @@ class MainWindow(QMainWindow):
         self.ui.web_cal_line.load(QUrl.fromLocalFile(self.cal_data.plot_path))
 
     def update_widen_obj_about(self):
+        self.widen.plot_widen()
         if self.ui.crossP.isChecked():
             self.slot_crossp()
         elif self.ui.crossNP.isChecked():

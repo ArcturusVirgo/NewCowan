@@ -4,9 +4,11 @@ from typing import List, Dict
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+from fastdtw import fastdtw
 from matplotlib import pyplot as plt
 from plotly.offline import plot
 from scipy.interpolate import interp1d
+from scipy.signal import correlate
 
 from .atom import Atomic
 
@@ -218,7 +220,6 @@ class Widen:
         result['cross_P'] = res[2]
         if save_in_memory:
             self.widen_data = result
-            self.plot_widen()
         return result
 
     def widen_by_group(self, temperature):
@@ -293,7 +294,7 @@ class Widen:
 
     @staticmethod
     def __fwhmgauss(wavelength: float):
-        return 0.27
+        return 0.5
 
 
 class SpectraAdd:
@@ -321,7 +322,7 @@ class SpectraAdd:
         return res, similarity
 
     def get_similarity(self):
-        return self.similarity2(self.exp_data.data[['wavelength', 'intensity']],
+        return self.similarity4(self.exp_data.data[['wavelength', 'intensity']],
                                self.result[['wavelength', 'intensity']])
 
     @staticmethod
@@ -366,15 +367,59 @@ class SpectraAdd:
         y1 = y1 / max(y1)
         y2 = y2 / max(y2)
 
-        dy1=np.diff(y1)
-        dy2=np.diff(y2)
-        distance = np.linalg.norm(dy1-dy2)
-        return distance
+        # dy1=np.diff(y1)
+        # dy2=np.diff(y2)
+        # distance = np.linalg.norm(dy1-dy2)
+        # return distance
         # y2是测量值，y1是预测值
-        # SS_reg = np.power(y1 - y2.mean(), 2).sum()
-        # SS_tot = np.power(y2 - y2.mean(), 2).sum()
-        # R2 = SS_reg / SS_tot
-        # if R2 > 1:
-        #     return 1 / R2
-        # else:
-        #     return R2
+        SS_reg = np.power(y1 - y2.mean(), 2).sum()
+        SS_tot = np.power(y2 - y2.mean(), 2).sum()
+        R2 = SS_reg / SS_tot
+        if R2 > 1:
+            return 1 / R2
+        else:
+            return R2
+
+    @staticmethod
+    def similarity3(fax: pd.DataFrame, fbx: pd.DataFrame):
+        col_names_a = fax.columns
+        col_names_b = fbx.columns
+
+        min_x = max(fax[col_names_a[0]].min(), fbx[col_names_b[0]].min())
+        max_x = min(fax[col_names_a[0]].max(), fbx[col_names_b[0]].max())
+
+        fax_new = fax[(fax[col_names_a[0]] <= max_x) & (min_x <= fax[col_names_a[0]])]
+        fbx_new = fbx[(fbx[col_names_b[0]] <= max_x) & (min_x <= fbx[col_names_b[0]])]
+
+        f1 = interp1d(fax_new[col_names_a[0]], fax_new[col_names_a[1]], fill_value="extrapolate")
+        f2 = interp1d(fbx_new[col_names_b[0]], fbx_new[col_names_b[1]], fill_value="extrapolate")
+        x = np.linspace(min_x, max_x, max(fax_new.shape[0], fbx_new.shape[0]))
+        y1 = f1(x)
+        y2 = f2(x)
+        y1 = y1 / max(y1)
+        y2 = y2 / max(y2)
+
+        distance, path = fastdtw(y1, y2)
+        return distance
+    @staticmethod
+    def similarity4(fax: pd.DataFrame, fbx: pd.DataFrame):
+        col_names_a = fax.columns
+        col_names_b = fbx.columns
+
+        min_x = max(fax[col_names_a[0]].min(), fbx[col_names_b[0]].min())
+        max_x = min(fax[col_names_a[0]].max(), fbx[col_names_b[0]].max())
+
+        fax_new = fax[(fax[col_names_a[0]] <= max_x) & (min_x <= fax[col_names_a[0]])]
+        fbx_new = fbx[(fbx[col_names_b[0]] <= max_x) & (min_x <= fbx[col_names_b[0]])]
+
+        f1 = interp1d(fax_new[col_names_a[0]], fax_new[col_names_a[1]], fill_value="extrapolate")
+        f2 = interp1d(fbx_new[col_names_b[0]], fbx_new[col_names_b[1]], fill_value="extrapolate")
+        x = np.linspace(min_x, max_x, max(fax_new.shape[0], fbx_new.shape[0]))
+        y1 = f1(x)
+        y2 = f2(x)
+        y1 = y1 / max(y1)
+        y2 = y2 / max(y2)
+
+        corr = np.corrcoef(y1, y2)[0, 1]
+        return corr
+
