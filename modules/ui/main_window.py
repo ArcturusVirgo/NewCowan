@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.0
+## Created by: Qt User Interface Compiler version 6.4.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -29,8 +29,9 @@ class Ui_main_window(object):
     def setupUi(self, main_window):
         if not main_window.objectName():
             main_window.setObjectName(u"main_window")
-        main_window.resize(1336, 814)
+        main_window.resize(1343, 883)
         main_window.setMinimumSize(QSize(0, 0))
+        main_window.setMaximumSize(QSize(16777215, 16777215))
         self.action = QAction(main_window)
         self.action.setObjectName(u"action")
         self.action.setPriority(QAction.NormalPriority)
@@ -1537,7 +1538,7 @@ class Ui_main_window(object):
         self.page2_density_index = QDoubleSpinBox(self.groupBox)
         self.page2_density_index.setObjectName(u"page2_density_index")
         self.page2_density_index.setSingleStep(0.100000000000000)
-        self.page2_density_index.setValue(23.000000000000000)
+        self.page2_density_index.setValue(19.000000000000000)
 
         self.horizontalLayout_15.addWidget(self.page2_density_index)
 
@@ -1598,7 +1599,7 @@ class Ui_main_window(object):
         self.page2_progressBar = QProgressBar(self.groupBox_3)
         self.page2_progressBar.setObjectName(u"page2_progressBar")
         self.page2_progressBar.setMaximumSize(QSize(16777215, 12))
-        self.page2_progressBar.setValue(24)
+        self.page2_progressBar.setValue(0)
         self.page2_progressBar.setTextVisible(True)
 
         self.verticalLayout_12.addWidget(self.page2_progressBar)
@@ -1610,14 +1611,14 @@ class Ui_main_window(object):
         self.groupBox_4.setObjectName(u"groupBox_4")
         sizePolicy.setHeightForWidth(self.groupBox_4.sizePolicy().hasHeightForWidth())
         self.groupBox_4.setSizePolicy(sizePolicy)
-        self.groupBox_4.setMinimumSize(QSize(300, 0))
-        self.groupBox_4.setMaximumSize(QSize(300, 16777215))
-        self.horizontalLayout_19 = QHBoxLayout(self.groupBox_4)
-        self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
+        self.groupBox_4.setMinimumSize(QSize(0, 0))
+        self.groupBox_4.setMaximumSize(QSize(16777215, 16777215))
+        self.gridLayout_4 = QGridLayout(self.groupBox_4)
+        self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.page2_grid_list = QTableWidget(self.groupBox_4)
         self.page2_grid_list.setObjectName(u"page2_grid_list")
 
-        self.horizontalLayout_19.addWidget(self.page2_grid_list)
+        self.gridLayout_4.addWidget(self.page2_grid_list, 0, 0, 1, 1)
 
 
         self.horizontalLayout_22.addWidget(self.groupBox_4)
@@ -1652,7 +1653,7 @@ class Ui_main_window(object):
 
         self.temperature_num = QSpinBox(self.groupBox_5)
         self.temperature_num.setObjectName(u"temperature_num")
-        self.temperature_num.setValue(10)
+        self.temperature_num.setValue(5)
 
         self.verticalLayout_10.addWidget(self.temperature_num)
 
@@ -1697,7 +1698,7 @@ class Ui_main_window(object):
 
         self.density_num = QSpinBox(self.groupBox_5)
         self.density_num.setObjectName(u"density_num")
-        self.density_num.setValue(10)
+        self.density_num.setValue(3)
 
         self.verticalLayout_10.addWidget(self.density_num)
 
@@ -1723,7 +1724,7 @@ class Ui_main_window(object):
         main_window.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(main_window)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1336, 21))
+        self.menubar.setGeometry(QRect(0, 0, 1343, 22))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menubar)

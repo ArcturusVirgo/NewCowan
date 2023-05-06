@@ -1,3 +1,6 @@
+import asyncio
+import os
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import List, Dict
 
@@ -308,6 +311,9 @@ class SpectraAdd:
         self.atom = atom
         self.widen_list = widen_list
         self.plot_path = self.project_path.joinpath('figure/add.html').as_posix()
+        self.grid_path = self.project_path.joinpath('figure/grid.html').as_posix()
+        self.similarity: pd.DataFrame | None = None
+        self.grid_data: Dict | None = None
 
         self.result: pd.DataFrame | None = None
 
@@ -327,9 +333,65 @@ class SpectraAdd:
         similarity = self.get_similarity()
         return res, similarity
 
+    def get_cal_grid(self, n_values: np.ndarray, t_values: np.ndarray, pbar):
+        loop = asyncio.get_event_loop()
+        res = []
+
+        async def cal_grid():
+            pool = ProcessPoolExecutor(os.cpu_count() - 1)
+            sum_count = n_values.shape[0] * t_values.shape[0]
+            finish_count = 0
+            tasks_out = []
+
+            for n in n_values:
+                tasks_in = []
+                for t in t_values:
+                    temp_task = loop.run_in_executor(pool, self.get_add_data, t, n)
+                    tasks_in.append(temp_task)
+                tasks_out.append(tasks_in)
+
+            # 等待所有任务完成并跟踪进度
+            for tasks in tasks_out:
+                temp = []
+                for future in asyncio.as_completed(tasks):
+                    # 处理已完成任务的结果
+                    result = await future
+                    temp.append(result[1])
+                    finish_count += 1
+                    pbar.setValue(finish_count / sum_count * 100)
+                res.append(temp)
+
+        loop.run_until_complete(cal_grid())
+        self.grid_data = {
+            'temperature': t_values,
+            'density': n_values,
+            'grid_data': np.array(res)
+        }
+
+        self.similarity = pd.DataFrame(res)
+        self.similarity.columns = list(map(lambda x: '{:.3f}'.format(x), t_values))
+        self.similarity.index = list(map(lambda x: '{:.3e}'.format(x), n_values))
+        # print(self.grid_data.shape)
+        # print(n_values.shape[0])
+
+        self.plot_grid()
+
+    def plot_grid(self):
+        trace1 = go.Heatmap(x=self.grid_data['temperature'], y=self.grid_data['density'], z=self.grid_data['grid_data'])
+        data = [trace1]
+        layout = go.Layout(
+            margin=go.layout.Margin(b=15, l=60, r=0, t=0),
+            yaxis={
+                'type': 'log',
+                'tickformat': '.2e'
+            }
+        )
+        fig = go.Figure(data=data, layout=layout)
+        plot(fig, filename=self.grid_path, auto_open=False)
+
     def get_similarity(self):
         return self.similarity4(self.exp_data.data[['wavelength', 'intensity']],
-                               self.result[['wavelength', 'intensity']])
+                                self.result[['wavelength', 'intensity']])
 
     def plot_html(self):
         x1 = self.exp_data.data['wavelength']

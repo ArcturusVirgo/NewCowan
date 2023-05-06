@@ -1,8 +1,10 @@
 import asyncio
+import inspect
 import sys
 import shelve
 from concurrent.futures import ProcessPoolExecutor
 
+import pandas as pd
 from PySide6.QtWidgets import QAbstractItemView, QFileDialog, QDialog, QTextBrowser, QMessageBox
 
 from modules import *
@@ -74,6 +76,9 @@ class MainWindow(QMainWindow):
         self.ui.in36_configuration_view.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)  # 设置表格不可编辑
         self.ui.in36_configuration_view.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.ResizeToContents)  # 设置表格列宽自适应
+        self.ui.page2_grid_list.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)  # 设置表格不可编辑
+        self.ui.page2_grid_list.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.ResizeToContents)  # 设置表格列宽自适应
         # 隐藏不必要的按钮
         # self.ui.page_up.hide()
         # self.ui.page_down.hide()
@@ -119,6 +124,7 @@ class MainWindow(QMainWindow):
         # 第二页 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         self.ui.page2_plot_spectrum.clicked.connect(self.slot_page2_plot_spectrum)  # 绘制谱图
         self.ui.page2_cal_grid.clicked.connect(self.slot_page2_cal_grid)  # 计算网格
+        self.ui.page2_grid_list.itemDoubleClicked.connect(self.slot_page2_grid_list_clicked)
 
     def slot_show_guides(self):
         if self.v_line is None:
@@ -394,7 +400,10 @@ class MainWindow(QMainWindow):
         cal_obj_list = [CalData(self.PROJECT_PATH, self.exp_data, name) for name in add_name_list]
         widen_obj_list = [Widen(self.PROJECT_PATH, self.exp_data, cal_obj) for cal_obj in cal_obj_list]
 
-        self.spectra_add = SpectraAdd(self.PROJECT_PATH, self.atom, self.exp_data, widen_obj_list)
+        if self.spectra_add:
+            self.spectra_add.widen_list = widen_obj_list
+        else:
+            self.spectra_add = SpectraAdd(self.PROJECT_PATH, self.atom, self.exp_data, widen_obj_list)
         self.spectra_add.get_add_data(temperature, density)
         self.spectra_add.plot_html()
         self.update_spectra_add_obj_about()
@@ -404,40 +413,26 @@ class MainWindow(QMainWindow):
         cal_obj_list = [CalData(self.PROJECT_PATH, self.exp_data, name) for name in add_name_list]
         widen_obj_list = [Widen(self.PROJECT_PATH, self.exp_data, cal_obj) for cal_obj in cal_obj_list]
 
-        t_num = 10
-        ne_num = 10
-        t = np.linspace(self.ui.temperature_min.value(), self.ui.temperature_max.value(), t_num)
-        ne = np.power(10, np.linspace(
+        t_num = self.ui.temperature_num.value()
+        ne_num = self.ui.density_num.value()
+        t_list = np.linspace(self.ui.temperature_min.value(), self.ui.temperature_max.value(), t_num)
+        ne_list = np.power(10, np.linspace(
             np.log10(self.ui.density_min_base.value() * 10 ** self.ui.density_min_index.value()),
             np.log10(self.ui.density_max_base.value() * 10 ** self.ui.density_max_index.value()),
             ne_num))
-
         self.spectra_add = SpectraAdd(self.PROJECT_PATH, self.atom, self.exp_data, widen_obj_list)
+        self.ui.page2_progressBar.setValue(0)
+        self.spectra_add.get_cal_grid(ne_list, t_list, self.ui.page2_progressBar)
+        self.update_spectra_add_obj_about()
 
-        self.loop = asyncio.get_event_loop()
-        self.loop.run_until_complete(self.cal_grid(t, ne))
-        self.res = []
-
-    async def cal_grid(self, n_values, t_values):
-        pool = ProcessPoolExecutor(os.cpu_count())
-        tasks_out = []
-
-        for n in n_values:
-            tasks_in = []
-            for t in t_values:
-                temp_task = self.loop.run_in_executor(pool, self.spectra_add.get_add_data, t, n)
-                tasks_in.append(temp_task)
-            tasks_out.append(tasks_in)
-
-        # 等待所有任务完成并跟踪进度
-        for tasks in tasks_out:
-            temp = []
-            for future in asyncio.as_completed(tasks):
-                # 处理已完成任务的结果
-                result = await future
-                temp.append(result[1])
-                self.ui.page2_progressBar.update(1)
-            self.res.append(temp)
+    def slot_page2_grid_list_clicked(self, item):
+        temperature = self.spectra_add.grid_data['temperature'][item.column()]
+        density = self.spectra_add.grid_data['density'][item.row()]
+        temp = '{:.4e}'.format(density).split('e+')
+        self.ui.page2_temperature.setValue(temperature)
+        self.ui.page2_density_base.setValue(eval(temp[0]))
+        self.ui.page2_density_index.setValue(eval(temp[1]))
+        self.slot_page2_plot_spectrum()
 
     def get_in36_control_card(self):
         """
@@ -600,7 +595,29 @@ class MainWindow(QMainWindow):
             self.ui.page2_selection_list.addItem(QListWidgetItem(value))
 
     def update_spectra_add_obj_about(self):
-        self.ui.page2_add_spectrum_web.load(QUrl.fromLocalFile(self.spectra_add.plot_path))
+        # 如果是网格计算，就不绘图
+        flag = True
+        for frame in inspect.stack():
+            if frame[3] == 'slot_page2_cal_grid':
+                flag = False
+        if flag:
+            self.ui.page2_add_spectrum_web.load(QUrl.fromLocalFile(self.spectra_add.plot_path))
+        # 绘制网格计算相关的东西
+        if self.spectra_add.grid_data:
+            self.ui.page2_grid_web.load(QUrl.fromLocalFile(self.spectra_add.grid_path))
+            # 设置表格
+            self.ui.page2_grid_list.clear()
+            self.ui.page2_grid_list.setRowCount(self.spectra_add.similarity.shape[0])
+            self.ui.page2_grid_list.setColumnCount(self.spectra_add.similarity.shape[1])
+            self.ui.page2_grid_list.setHorizontalHeaderLabels(self.spectra_add.similarity.columns)
+            self.ui.page2_grid_list.setVerticalHeaderLabels(self.spectra_add.similarity.index[::-1])
+            sim_max = max(self.spectra_add.similarity.max())
+            for i in range(self.spectra_add.similarity.shape[0]):
+                for j in range(self.spectra_add.similarity.shape[1]):
+                    item = QTableWidgetItem('{:.4f}'.format(self.spectra_add.similarity.iloc[i, j], ))
+                    temp = int((self.spectra_add.similarity.iloc[i, j] + 1) / (sim_max + 1) * 255)
+                    item.setBackground(QBrush(QColor(0, 0, temp)))
+                    self.ui.page2_grid_list.setItem(self.spectra_add.similarity.shape[0] - i - 1, j, item)
 
     def update_first_page(self):
         pass

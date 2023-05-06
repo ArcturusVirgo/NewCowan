@@ -17,3 +17,7 @@
 #
 # i = datetime.datetime.now()  # 获取当前时间
 # print('今天是{}月{}日{}点{}分{}秒'.format(i.month, i.day, i.hour, i.minute, i.second))
+import numpy as np
+
+a = np.array([1,2,3,4,5])
+print('{:.2f}'.format(a[0]))
