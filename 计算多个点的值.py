@@ -4,7 +4,8 @@ from modules import *
 from tqdm import tqdm
 
 
-async def main(n_values, t_values):
+async def cal_grid(n_values, t_values):
+    res = []
     pool = ProcessPoolExecutor(os.cpu_count())
     tasks_out = []
 
@@ -24,6 +25,7 @@ async def main(n_values, t_values):
             temp.append(result[1])
             tbar.update(1)
         res.append(temp)
+    return res
 
 
 if __name__ == '__main__':
@@ -43,16 +45,15 @@ if __name__ == '__main__':
     sp = SpectraAdd(ph, a, exp, [w3, w4, w5, w6])
 
     start = time.time()
-    Te_num = 10
-    Ne_num = 10
+    Te_num = 2
+    Ne_num = 2
     Te = np.linspace(21, 24, Te_num)
     Ne = np.power(10, np.linspace(np.log10(1e17), np.log10(2e20), Ne_num))
     tbar = tqdm(total=Te_num * Ne_num)
-    res = []
 
     # 多进程 ---------------------------------------------
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main(Ne, Te))
+    res = loop.run_until_complete(cal_grid(Ne, Te))
 
     # 单进程 ---------------------------------------------
     # for n in Ne:

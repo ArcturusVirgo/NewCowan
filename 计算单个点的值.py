@@ -27,7 +27,7 @@ a = Atomic(32, 0)
 sp = SpectraAdd(ph, a, exp, [w4, w5, w6, w7, w8, w9, w10, w11, w12, w13])
 
 
-data = sp.get_add_data(24, 1.3e20)
+data = sp.get_add_data(39.47368, 9.4297e21)
 print(data[1])
 
 plt.plot(sp.result['wavelength'], sp.result['intensity'] / sp.result['intensity'].max())

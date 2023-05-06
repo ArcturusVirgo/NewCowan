@@ -20,10 +20,10 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QFrame,
     QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
     QLabel, QLineEdit, QListWidget, QListWidgetItem,
-    QMainWindow, QMenu, QMenuBar, QPushButton,
-    QRadioButton, QSizePolicy, QSpacerItem, QSpinBox,
-    QStackedWidget, QStatusBar, QTabWidget, QTableWidget,
-    QTableWidgetItem, QVBoxLayout, QWidget)
+    QMainWindow, QMenu, QMenuBar, QProgressBar,
+    QPushButton, QRadioButton, QSizePolicy, QSpacerItem,
+    QSpinBox, QStackedWidget, QStatusBar, QTabWidget,
+    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
 class Ui_main_window(object):
     def setupUi(self, main_window):
@@ -1335,11 +1335,6 @@ class Ui_main_window(object):
 
         self.horizontalLayout_7.addWidget(self.clear_history)
 
-        self.load_history = QPushButton(self.widget)
-        self.load_history.setObjectName(u"load_history")
-
-        self.horizontalLayout_7.addWidget(self.load_history)
-
         self.add_to_selection = QPushButton(self.widget)
         self.add_to_selection.setObjectName(u"add_to_selection")
 
@@ -1553,10 +1548,10 @@ class Ui_main_window(object):
 
         self.verticalLayout_9.addItem(self.verticalSpacer)
 
-        self.page2_plot = QPushButton(self.groupBox)
-        self.page2_plot.setObjectName(u"page2_plot")
+        self.page2_plot_spectrum = QPushButton(self.groupBox)
+        self.page2_plot_spectrum.setObjectName(u"page2_plot_spectrum")
 
-        self.verticalLayout_9.addWidget(self.page2_plot)
+        self.verticalLayout_9.addWidget(self.page2_plot_spectrum)
 
 
         self.horizontalLayout_21.addWidget(self.groupBox)
@@ -1572,15 +1567,15 @@ class Ui_main_window(object):
         self.groupBox_2.setMaximumSize(QSize(200, 16777215))
         self.horizontalLayout_8 = QHBoxLayout(self.groupBox_2)
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
-        self.listWidget = QListWidget(self.groupBox_2)
-        self.listWidget.setObjectName(u"listWidget")
-        self.listWidget.setAlternatingRowColors(True)
-        self.listWidget.setProperty("isWrapping", False)
-        self.listWidget.setSpacing(0)
-        self.listWidget.setUniformItemSizes(False)
-        self.listWidget.setSortingEnabled(False)
+        self.page2_selection_list = QListWidget(self.groupBox_2)
+        self.page2_selection_list.setObjectName(u"page2_selection_list")
+        self.page2_selection_list.setAlternatingRowColors(True)
+        self.page2_selection_list.setProperty("isWrapping", False)
+        self.page2_selection_list.setSpacing(0)
+        self.page2_selection_list.setUniformItemSizes(False)
+        self.page2_selection_list.setSortingEnabled(False)
 
-        self.horizontalLayout_8.addWidget(self.listWidget)
+        self.horizontalLayout_8.addWidget(self.page2_selection_list)
 
 
         self.horizontalLayout_22.addWidget(self.groupBox_2)
@@ -1592,13 +1587,21 @@ class Ui_main_window(object):
         sizePolicy8.setVerticalStretch(0)
         sizePolicy8.setHeightForWidth(self.groupBox_3.sizePolicy().hasHeightForWidth())
         self.groupBox_3.setSizePolicy(sizePolicy8)
-        self.horizontalLayout_18 = QHBoxLayout(self.groupBox_3)
-        self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
-        self.webEngineView_2 = QWebEngineView(self.groupBox_3)
-        self.webEngineView_2.setObjectName(u"webEngineView_2")
-        self.webEngineView_2.setUrl(QUrl(u"about:blank"))
+        self.verticalLayout_12 = QVBoxLayout(self.groupBox_3)
+        self.verticalLayout_12.setObjectName(u"verticalLayout_12")
+        self.page2_grid_web = QWebEngineView(self.groupBox_3)
+        self.page2_grid_web.setObjectName(u"page2_grid_web")
+        self.page2_grid_web.setUrl(QUrl(u"about:blank"))
 
-        self.horizontalLayout_18.addWidget(self.webEngineView_2)
+        self.verticalLayout_12.addWidget(self.page2_grid_web)
+
+        self.page2_progressBar = QProgressBar(self.groupBox_3)
+        self.page2_progressBar.setObjectName(u"page2_progressBar")
+        self.page2_progressBar.setMaximumSize(QSize(16777215, 12))
+        self.page2_progressBar.setValue(24)
+        self.page2_progressBar.setTextVisible(True)
+
+        self.verticalLayout_12.addWidget(self.page2_progressBar)
 
 
         self.horizontalLayout_22.addWidget(self.groupBox_3)
@@ -1611,10 +1614,10 @@ class Ui_main_window(object):
         self.groupBox_4.setMaximumSize(QSize(300, 16777215))
         self.horizontalLayout_19 = QHBoxLayout(self.groupBox_4)
         self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
-        self.tableWidget = QTableWidget(self.groupBox_4)
-        self.tableWidget.setObjectName(u"tableWidget")
+        self.page2_grid_list = QTableWidget(self.groupBox_4)
+        self.page2_grid_list.setObjectName(u"page2_grid_list")
 
-        self.horizontalLayout_19.addWidget(self.tableWidget)
+        self.horizontalLayout_19.addWidget(self.page2_grid_list)
 
 
         self.horizontalLayout_22.addWidget(self.groupBox_4)
@@ -1625,6 +1628,34 @@ class Ui_main_window(object):
         self.groupBox_5.setMaximumSize(QSize(200, 16777215))
         self.verticalLayout_10 = QVBoxLayout(self.groupBox_5)
         self.verticalLayout_10.setObjectName(u"verticalLayout_10")
+        self.label_16 = QLabel(self.groupBox_5)
+        self.label_16.setObjectName(u"label_16")
+
+        self.verticalLayout_10.addWidget(self.label_16)
+
+        self.horizontalLayout_18 = QHBoxLayout()
+        self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
+        self.temperature_min = QDoubleSpinBox(self.groupBox_5)
+        self.temperature_min.setObjectName(u"temperature_min")
+        self.temperature_min.setValue(20.000000000000000)
+
+        self.horizontalLayout_18.addWidget(self.temperature_min)
+
+        self.temperature_max = QDoubleSpinBox(self.groupBox_5)
+        self.temperature_max.setObjectName(u"temperature_max")
+        self.temperature_max.setValue(50.000000000000000)
+
+        self.horizontalLayout_18.addWidget(self.temperature_max)
+
+
+        self.verticalLayout_10.addLayout(self.horizontalLayout_18)
+
+        self.temperature_num = QSpinBox(self.groupBox_5)
+        self.temperature_num.setObjectName(u"temperature_num")
+        self.temperature_num.setValue(10)
+
+        self.verticalLayout_10.addWidget(self.temperature_num)
+
         self.label_17 = QLabel(self.groupBox_5)
         self.label_17.setObjectName(u"label_17")
 
@@ -1632,75 +1663,52 @@ class Ui_main_window(object):
 
         self.horizontalLayout_16 = QHBoxLayout()
         self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
-        self.doubleSpinBox_5 = QDoubleSpinBox(self.groupBox_5)
-        self.doubleSpinBox_5.setObjectName(u"doubleSpinBox_5")
-        self.doubleSpinBox_5.setValue(1.000000000000000)
+        self.density_min_base = QDoubleSpinBox(self.groupBox_5)
+        self.density_min_base.setObjectName(u"density_min_base")
+        self.density_min_base.setValue(1.000000000000000)
 
-        self.horizontalLayout_16.addWidget(self.doubleSpinBox_5)
+        self.horizontalLayout_16.addWidget(self.density_min_base)
 
-        self.doubleSpinBox_6 = QDoubleSpinBox(self.groupBox_5)
-        self.doubleSpinBox_6.setObjectName(u"doubleSpinBox_6")
-        self.doubleSpinBox_6.setValue(17.000000000000000)
+        self.density_min_index = QDoubleSpinBox(self.groupBox_5)
+        self.density_min_index.setObjectName(u"density_min_index")
+        self.density_min_index.setValue(17.000000000000000)
 
-        self.horizontalLayout_16.addWidget(self.doubleSpinBox_6)
+        self.horizontalLayout_16.addWidget(self.density_min_index)
 
 
         self.verticalLayout_10.addLayout(self.horizontalLayout_16)
 
         self.horizontalLayout_17 = QHBoxLayout()
         self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
-        self.doubleSpinBox_4 = QDoubleSpinBox(self.groupBox_5)
-        self.doubleSpinBox_4.setObjectName(u"doubleSpinBox_4")
-        self.doubleSpinBox_4.setValue(1.000000000000000)
+        self.density_max_base = QDoubleSpinBox(self.groupBox_5)
+        self.density_max_base.setObjectName(u"density_max_base")
+        self.density_max_base.setValue(1.000000000000000)
 
-        self.horizontalLayout_17.addWidget(self.doubleSpinBox_4)
+        self.horizontalLayout_17.addWidget(self.density_max_base)
 
-        self.doubleSpinBox_7 = QDoubleSpinBox(self.groupBox_5)
-        self.doubleSpinBox_7.setObjectName(u"doubleSpinBox_7")
-        self.doubleSpinBox_7.setValue(23.000000000000000)
+        self.density_max_index = QDoubleSpinBox(self.groupBox_5)
+        self.density_max_index.setObjectName(u"density_max_index")
+        self.density_max_index.setValue(23.000000000000000)
 
-        self.horizontalLayout_17.addWidget(self.doubleSpinBox_7)
+        self.horizontalLayout_17.addWidget(self.density_max_index)
 
 
         self.verticalLayout_10.addLayout(self.horizontalLayout_17)
 
-        self.spinBox_2 = QSpinBox(self.groupBox_5)
-        self.spinBox_2.setObjectName(u"spinBox_2")
-        self.spinBox_2.setValue(10)
+        self.density_num = QSpinBox(self.groupBox_5)
+        self.density_num.setObjectName(u"density_num")
+        self.density_num.setValue(10)
 
-        self.verticalLayout_10.addWidget(self.spinBox_2)
-
-        self.label_16 = QLabel(self.groupBox_5)
-        self.label_16.setObjectName(u"label_16")
-
-        self.verticalLayout_10.addWidget(self.label_16)
-
-        self.doubleSpinBox = QDoubleSpinBox(self.groupBox_5)
-        self.doubleSpinBox.setObjectName(u"doubleSpinBox")
-        self.doubleSpinBox.setValue(20.000000000000000)
-
-        self.verticalLayout_10.addWidget(self.doubleSpinBox)
-
-        self.doubleSpinBox_2 = QDoubleSpinBox(self.groupBox_5)
-        self.doubleSpinBox_2.setObjectName(u"doubleSpinBox_2")
-        self.doubleSpinBox_2.setValue(50.000000000000000)
-
-        self.verticalLayout_10.addWidget(self.doubleSpinBox_2)
-
-        self.spinBox = QSpinBox(self.groupBox_5)
-        self.spinBox.setObjectName(u"spinBox")
-        self.spinBox.setValue(10)
-
-        self.verticalLayout_10.addWidget(self.spinBox)
+        self.verticalLayout_10.addWidget(self.density_num)
 
         self.verticalSpacer_4 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_10.addItem(self.verticalSpacer_4)
 
-        self.pushButton_2 = QPushButton(self.groupBox_5)
-        self.pushButton_2.setObjectName(u"pushButton_2")
+        self.page2_cal_grid = QPushButton(self.groupBox_5)
+        self.page2_cal_grid.setObjectName(u"page2_cal_grid")
 
-        self.verticalLayout_10.addWidget(self.pushButton_2)
+        self.verticalLayout_10.addWidget(self.page2_cal_grid)
 
 
         self.horizontalLayout_22.addWidget(self.groupBox_5)
@@ -1944,7 +1952,6 @@ class Ui_main_window(object):
         self.run_cowan.setText(QCoreApplication.translate("main_window", u"\u8ba1\u7b97", None))
         self.label_9.setText(QCoreApplication.translate("main_window", u"\u8ba1\u7b97\u5386\u53f2", None))
         self.clear_history.setText(QCoreApplication.translate("main_window", u"\u6e05\u7a7a", None))
-        self.load_history.setText(QCoreApplication.translate("main_window", u"\u52a0\u8f7d", None))
         self.add_to_selection.setText(QCoreApplication.translate("main_window", u"\u6dfb\u52a0\u81f3\u5e93\u4e2d", None))
         self.label_10.setText(QCoreApplication.translate("main_window", u"\u5e93", None))
         self.del_selection.setText(QCoreApplication.translate("main_window", u"\u5220\u9664", None))
@@ -1958,14 +1965,14 @@ class Ui_main_window(object):
         self.groupBox.setTitle(QCoreApplication.translate("main_window", u"\u7ed8\u56fe\u9009\u9879", None))
         self.label_18.setText(QCoreApplication.translate("main_window", u"\u6e29\u5ea6", None))
         self.label_19.setText(QCoreApplication.translate("main_window", u"\u5bc6\u5ea6", None))
-        self.page2_plot.setText(QCoreApplication.translate("main_window", u"\u7ed8\u5236", None))
+        self.page2_plot_spectrum.setText(QCoreApplication.translate("main_window", u"\u7ed8\u5236", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("main_window", u"\u9009\u62e9\u5668", None))
         self.groupBox_3.setTitle(QCoreApplication.translate("main_window", u"\u76f8\u4f3c\u5ea6", None))
         self.groupBox_4.setTitle(QCoreApplication.translate("main_window", u"\u7ed3\u679c", None))
         self.groupBox_5.setTitle(QCoreApplication.translate("main_window", u"\u53c2\u6570\u8c03\u6574", None))
-        self.label_17.setText(QCoreApplication.translate("main_window", u"\u5bc6\u5ea6\u8303\u56f4", None))
         self.label_16.setText(QCoreApplication.translate("main_window", u"\u6e29\u5ea6\u8303\u56f4", None))
-        self.pushButton_2.setText(QCoreApplication.translate("main_window", u"\u5f00\u59cb\u8ba1\u7b97", None))
+        self.label_17.setText(QCoreApplication.translate("main_window", u"\u5bc6\u5ea6\u8303\u56f4", None))
+        self.page2_cal_grid.setText(QCoreApplication.translate("main_window", u"\u5f00\u59cb\u8ba1\u7b97", None))
         self.menu.setTitle(QCoreApplication.translate("main_window", u"\u6587\u4ef6", None))
         self.menu_2.setTitle(QCoreApplication.translate("main_window", u"\u8ba1\u7b97", None))
         self.menu_3.setTitle(QCoreApplication.translate("main_window", u"\u5de5\u5177", None))

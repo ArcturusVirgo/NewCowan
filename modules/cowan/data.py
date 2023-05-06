@@ -210,7 +210,7 @@ class Widen:
         # 计算布居
         population = (2 * new_J + 1) * np.exp(-abs(new_energy - min_energy) * 0.124 / temperature) / (2 * min_J + 1)
         if self.n is None:
-            wave = np.array(self.exp_data.data['wavelength'].values)
+            wave = 1239.85 / np.array(self.exp_data.data['wavelength'].values)
         else:
             wave = np.linspace(min_wavelength_ev, max_wavelength_ev, self.n)
         result = pd.DataFrame()
@@ -307,6 +307,7 @@ class SpectraAdd:
         self.exp_data = exp_data
         self.atom = atom
         self.widen_list = widen_list
+        self.plot_path = self.project_path.joinpath('figure/add.html').as_posix()
 
         self.result: pd.DataFrame | None = None
 
@@ -329,6 +330,21 @@ class SpectraAdd:
     def get_similarity(self):
         return self.similarity4(self.exp_data.data[['wavelength', 'intensity']],
                                self.result[['wavelength', 'intensity']])
+
+    def plot_html(self):
+        x1 = self.exp_data.data['wavelength']
+        y1 = self.exp_data.data['intensity'] / self.exp_data.data['intensity'].max() + 0.5
+        x2 = self.result['wavelength']
+        y2 = self.result['intensity'] / self.result['intensity'].max()
+        trace1 = go.Scatter(x=x1, y=y1, mode='lines')
+        trace2 = go.Scatter(x=x2, y=y2, mode='lines')
+        data = [trace1, trace2]
+        layout = go.Layout(margin=go.layout.Margin(autoexpand=False, b=15, l=30, r=0, t=0),
+                           xaxis=go.layout.XAxis(range=self.exp_data.x_range),
+                           )
+        # yaxis=go.layout.YAxis(range=[self.min_strength, self.max_strength]))
+        fig = go.Figure(data=data, layout=layout)
+        plot(fig, filename=self.plot_path, auto_open=False)
 
     @staticmethod
     def similarity(fax: pd.DataFrame, fbx: pd.DataFrame):
@@ -398,8 +414,6 @@ class SpectraAdd:
             max_x = min(fax[col_names_a[0]].max(), fbx[col_names_b[0]].max())
         fax_new = fax[(fax[col_names_a[0]] <= max_x) & (min_x <= fax[col_names_a[0]])]
         fbx_new = fbx[(fbx[col_names_b[0]] <= max_x) & (min_x <= fbx[col_names_b[0]])]
-        print(col_names_b)
-        print(fbx_new)
         f2 = interp1d(fbx_new[col_names_b[0]], fbx_new[col_names_b[1]], fill_value="extrapolate")
         x = fax_new[col_names_a[0]].values
         y1 = fax_new[col_names_a[1]].values

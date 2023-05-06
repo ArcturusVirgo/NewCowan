@@ -1,5 +1,7 @@
+import asyncio
 import sys
 import shelve
+from concurrent.futures import ProcessPoolExecutor
 
 from PySide6.QtWidgets import QAbstractItemView, QFileDialog, QDialog, QTextBrowser, QMessageBox
 
@@ -48,6 +50,7 @@ class MainWindow(QMainWindow):
         self.run: Run | None = None
         self.cal_data: CalData | None = None
         self.widen: Widen | None = None
+        self.spectra_add: SpectraAdd | None = None
 
         self.v_line: VerticalLine | None = None
 
@@ -103,7 +106,7 @@ class MainWindow(QMainWindow):
         self.ui.clear_history.clicked.connect(self.slot_clear_history)  # 清空运行历史
         self.ui.add_to_selection.clicked.connect(self.slot_add_to_selection)  # 将该项目添加至库中
         self.ui.del_selection.clicked.connect(self.slot_del_selection)  # 将该项目从库中删除
-        self.ui.load_history.clicked.connect(self.slot_load_history)  # 加载库中的项目
+        self.ui.run_history_list.itemDoubleClicked.connect(self.slot_load_history)  # 加载库中的项目
         # 单选框
         self.ui.auto_write_in36.clicked.connect(self.slot_auto_write_in36)  # 自动生成in36
         self.ui.manual_write_in36.clicked.connect(self.slot_manual_write_in36)  # 手动输入in36
@@ -113,6 +116,22 @@ class MainWindow(QMainWindow):
         # 输入框
         self.ui.in2_11_e.valueChanged.connect(self.slot_in2_11_e_value_changed)  # in2 11 e
 
+        # 第二页 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        self.ui.page2_plot_spectrum.clicked.connect(self.slot_page2_plot_spectrum)  # 绘制谱图
+        self.ui.page2_cal_grid.clicked.connect(self.slot_page2_cal_grid)  # 计算网格
+
+    def slot_show_guides(self):
+        if self.v_line is None:
+            x, y = self.ui.exp_web.mapToGlobal(self.ui.exp_web.pos()).toTuple()
+            self.v_line = VerticalLine(x, y - 100, self.window().height() - 100)
+            self.v_line.show()
+            self.ui.show_guides.setText('隐藏参考线')
+        else:
+            self.v_line.close()
+            self.v_line = None
+            self.ui.show_guides.setText('显示参考线')
+
+    # page_1 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     def slot_load_exp_data(self):
         path, types = QFileDialog.getOpenFileName(self, '请选择实验数据', self.PROJECT_PATH.as_posix(),
                                                   '数据文件(*.txt *.csv)')
@@ -133,17 +152,6 @@ class MainWindow(QMainWindow):
 
         self.ui.load_exp_data.setText('重新加载实验数据')
         self.ui.statusbar.showMessage('已加载实验数据')
-
-    def slot_show_guides(self):
-        if self.v_line is None:
-            x, y = self.ui.exp_web.mapToGlobal(self.ui.exp_web.pos()).toTuple()
-            self.v_line = VerticalLine(x, y - 100, self.window().height() - 100)
-            self.v_line.show()
-            self.ui.show_guides.setText('隐藏参考线')
-        else:
-            self.v_line.close()
-            self.v_line = None
-            self.ui.show_guides.setText('显示参考线')
 
     def slot_atomic_num(self, index):
         self.atom = Atomic(index + 1, 0)
@@ -235,6 +243,17 @@ class MainWindow(QMainWindow):
         self.ui.crossP.setEnabled(True)
         self.ui.crossNP.setEnabled(True)
         self.update_widen_obj_about()
+        # 将此状态保存
+        obj_info = shelve.open(self.PROJECT_PATH.joinpath(f'cal_result/{self.run.name}/obj_info').as_posix())
+        obj_info['atom'] = self.atom
+        obj_info['cal_data'] = self.cal_data
+        obj_info['exp_data'] = self.exp_data
+        obj_info['in36'] = self.in36
+        obj_info['in2'] = self.in2
+        obj_info['cal_data'] = self.cal_data
+        obj_info['run'] = self.run
+        obj_info['widen'] = self.widen
+        obj_info.close()
 
     def slot_gauss(self):
         self.ui.web_cal_widen.load(QUrl.fromLocalFile(self.widen.plot_path_gauss))
@@ -330,9 +349,25 @@ class MainWindow(QMainWindow):
         self.recorder.del_selection(index)
         self.update_recorder_obj_about()
 
-    def slot_load_history(self):
-        pass
-        # TODO
+    def slot_load_history(self, index):
+        name = index.text()
+        obj_info = shelve.open(self.PROJECT_PATH.joinpath(f'cal_result/{name}/obj_info').as_posix())
+        self.atom = obj_info['atom']
+        self.cal_data = obj_info['cal_data']
+        self.exp_data = obj_info['exp_data']
+        self.in36 = obj_info['in36']
+        self.in2 = obj_info['in2']
+        self.cal_data = obj_info['cal_data']
+        self.run = obj_info['run']
+        self.widen = obj_info['widen']
+        obj_info.close()
+        self.update_atom_obj_about()
+        self.update_in36_obj_about()
+        self.update_in2_obj_about()
+        self.update_exp_data_obj_about()
+        self.update_run_obj_about()
+        self.update_cal_data_obj_about()
+        self.update_widen_obj_about()
 
     def slot_save_project(self):
         obj_info = shelve.open(self.PROJECT_PATH.joinpath('.cowan/obj_info').as_posix())
@@ -351,6 +386,58 @@ class MainWindow(QMainWindow):
     def slot_exit_project(self):
         self.slot_save_project()
         sys.exit()
+
+    def slot_page2_plot_spectrum(self):
+        temperature = self.ui.page2_temperature.value()
+        density = self.ui.page2_density_base.value() * 10 ** self.ui.page2_density_index.value()
+        add_name_list = self.recorder.selection
+        cal_obj_list = [CalData(self.PROJECT_PATH, self.exp_data, name) for name in add_name_list]
+        widen_obj_list = [Widen(self.PROJECT_PATH, self.exp_data, cal_obj) for cal_obj in cal_obj_list]
+
+        self.spectra_add = SpectraAdd(self.PROJECT_PATH, self.atom, self.exp_data, widen_obj_list)
+        self.spectra_add.get_add_data(temperature, density)
+        self.spectra_add.plot_html()
+        self.update_spectra_add_obj_about()
+
+    def slot_page2_cal_grid(self):
+        add_name_list = self.recorder.selection
+        cal_obj_list = [CalData(self.PROJECT_PATH, self.exp_data, name) for name in add_name_list]
+        widen_obj_list = [Widen(self.PROJECT_PATH, self.exp_data, cal_obj) for cal_obj in cal_obj_list]
+
+        t_num = 10
+        ne_num = 10
+        t = np.linspace(self.ui.temperature_min.value(), self.ui.temperature_max.value(), t_num)
+        ne = np.power(10, np.linspace(
+            np.log10(self.ui.density_min_base.value() * 10 ** self.ui.density_min_index.value()),
+            np.log10(self.ui.density_max_base.value() * 10 ** self.ui.density_max_index.value()),
+            ne_num))
+
+        self.spectra_add = SpectraAdd(self.PROJECT_PATH, self.atom, self.exp_data, widen_obj_list)
+
+        self.loop = asyncio.get_event_loop()
+        self.loop.run_until_complete(self.cal_grid(t, ne))
+        self.res = []
+
+    async def cal_grid(self, n_values, t_values):
+        pool = ProcessPoolExecutor(os.cpu_count())
+        tasks_out = []
+
+        for n in n_values:
+            tasks_in = []
+            for t in t_values:
+                temp_task = self.loop.run_in_executor(pool, self.spectra_add.get_add_data, t, n)
+                tasks_in.append(temp_task)
+            tasks_out.append(tasks_in)
+
+        # 等待所有任务完成并跟踪进度
+        for tasks in tasks_out:
+            temp = []
+            for future in asyncio.as_completed(tasks):
+                # 处理已完成任务的结果
+                result = await future
+                temp.append(result[1])
+                self.ui.page2_progressBar.update(1)
+            self.res.append(temp)
 
     def get_in36_control_card(self):
         """
@@ -503,10 +590,23 @@ class MainWindow(QMainWindow):
         self.ui.run_history_list.clear()
         for value in self.recorder.run_history:
             self.ui.run_history_list.addItem(QListWidgetItem(value))
-        # 更新元素选择
+        # 更新元素选择 第一页
         self.ui.selection_list.clear()
         for value in self.recorder.selection:
             self.ui.selection_list.addItem(QListWidgetItem(value))
+        # 更新元素选择 第二页
+        self.ui.page2_selection_list.clear()
+        for value in self.recorder.selection:
+            self.ui.page2_selection_list.addItem(QListWidgetItem(value))
+
+    def update_spectra_add_obj_about(self):
+        self.ui.page2_add_spectrum_web.load(QUrl.fromLocalFile(self.spectra_add.plot_path))
+
+    def update_first_page(self):
+        pass
+
+    def update_second_page(self):
+        pass
 
     def load_project(self):
         obj_info = shelve.open(self.PROJECT_PATH.joinpath('.cowan/obj_info').as_posix())

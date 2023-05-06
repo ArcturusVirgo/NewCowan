@@ -3319,13 +3319,6 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="load_history">
-                   <property name="text">
-                    <string>加载</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
                   <widget class="QPushButton" name="add_to_selection">
                    <property name="text">
                     <string>添加至库中</string>
@@ -3655,7 +3648,7 @@
               </spacer>
              </item>
              <item>
-              <widget class="QPushButton" name="page2_plot">
+              <widget class="QPushButton" name="page2_plot_spectrum">
                <property name="text">
                 <string>绘制</string>
                </property>
@@ -3687,7 +3680,7 @@
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_8">
              <item>
-              <widget class="QListWidget" name="listWidget">
+              <widget class="QListWidget" name="page2_selection_list">
                <property name="alternatingRowColors">
                 <bool>true</bool>
                </property>
@@ -3719,13 +3712,29 @@
             <property name="title">
              <string>相似度</string>
             </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_18">
+            <layout class="QVBoxLayout" name="verticalLayout_12">
              <item>
-              <widget class="QWebEngineView" name="webEngineView_2">
+              <widget class="QWebEngineView" name="page2_grid_web">
                <property name="url">
                 <url>
                  <string>about:blank</string>
                 </url>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QProgressBar" name="page2_progressBar">
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>12</height>
+                </size>
+               </property>
+               <property name="value">
+                <number>24</number>
+               </property>
+               <property name="textVisible">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -3757,7 +3766,7 @@
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_19">
              <item>
-              <widget class="QTableWidget" name="tableWidget"/>
+              <widget class="QTableWidget" name="page2_grid_list"/>
              </item>
             </layout>
            </widget>
@@ -3781,6 +3790,38 @@
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_10">
              <item>
+              <widget class="QLabel" name="label_16">
+               <property name="text">
+                <string>温度范围</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_18">
+               <item>
+                <widget class="QDoubleSpinBox" name="temperature_min">
+                 <property name="value">
+                  <double>20.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QDoubleSpinBox" name="temperature_max">
+                 <property name="value">
+                  <double>50.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="temperature_num">
+               <property name="value">
+                <number>10</number>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QLabel" name="label_17">
                <property name="text">
                 <string>密度范围</string>
@@ -3790,14 +3831,14 @@
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_16">
                <item>
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
+                <widget class="QDoubleSpinBox" name="density_min_base">
                  <property name="value">
                   <double>1.000000000000000</double>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_6">
+                <widget class="QDoubleSpinBox" name="density_min_index">
                  <property name="value">
                   <double>17.000000000000000</double>
                  </property>
@@ -3808,14 +3849,14 @@
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_17">
                <item>
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+                <widget class="QDoubleSpinBox" name="density_max_base">
                  <property name="value">
                   <double>1.000000000000000</double>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QDoubleSpinBox" name="doubleSpinBox_7">
+                <widget class="QDoubleSpinBox" name="density_max_index">
                  <property name="value">
                   <double>23.000000000000000</double>
                  </property>
@@ -3824,35 +3865,7 @@
               </layout>
              </item>
              <item>
-              <widget class="QSpinBox" name="spinBox_2">
-               <property name="value">
-                <number>10</number>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_16">
-               <property name="text">
-                <string>温度范围</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QDoubleSpinBox" name="doubleSpinBox">
-               <property name="value">
-                <double>20.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
-               <property name="value">
-                <double>50.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spinBox">
+              <widget class="QSpinBox" name="density_num">
                <property name="value">
                 <number>10</number>
                </property>
@@ -3872,7 +3885,7 @@
               </spacer>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_2">
+              <widget class="QPushButton" name="page2_cal_grid">
                <property name="text">
                 <string>开始计算</string>
                </property>

@@ -14,13 +14,15 @@ class Recorder:
         self.selection = []
 
     def add_history(self, name):
-        self.run_history.append(name)
+        if name not in self.run_history:
+            self.run_history.append(name)
 
     def clear_history(self):
         self.run_history = []
 
     def add_selection(self, name):
-        self.selection.append(name)
+        if name not in self.selection:
+            self.selection.append(name)
 
     def del_selection(self, index):
         self.selection.pop(index)
