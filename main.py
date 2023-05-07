@@ -1,11 +1,14 @@
 import asyncio
+import colorsys
 import inspect
 import sys
 import shelve
 from concurrent.futures import ProcessPoolExecutor
 
+import matplotlib
 import pandas as pd
 from PySide6.QtWidgets import QAbstractItemView, QFileDialog, QDialog, QTextBrowser, QMessageBox
+from matplotlib import cm
 
 from modules import *
 
@@ -595,6 +598,11 @@ class MainWindow(QMainWindow):
             self.ui.page2_selection_list.addItem(QListWidgetItem(value))
 
     def update_spectra_add_obj_about(self):
+        def rainbow_color(x):
+            camp = matplotlib.colormaps['rainbow']
+            rgba = camp(x)
+            return int(rgba[0] * 255), int(rgba[1] * 255), int(rgba[2] * 255), int(rgba[3] * 255)
+
         # 如果是网格计算，就不绘图
         flag = True
         for frame in inspect.stack():
@@ -611,12 +619,12 @@ class MainWindow(QMainWindow):
             self.ui.page2_grid_list.setColumnCount(self.spectra_add.similarity.shape[1])
             self.ui.page2_grid_list.setHorizontalHeaderLabels(self.spectra_add.similarity.columns)
             self.ui.page2_grid_list.setVerticalHeaderLabels(self.spectra_add.similarity.index[::-1])
-            sim_max = max(self.spectra_add.similarity.max())
+            sim_max = self.spectra_add.similarity.values.flatten().max()
             for i in range(self.spectra_add.similarity.shape[0]):
                 for j in range(self.spectra_add.similarity.shape[1]):
                     item = QTableWidgetItem('{:.4f}'.format(self.spectra_add.similarity.iloc[i, j], ))
-                    temp = int((self.spectra_add.similarity.iloc[i, j] + 1) / (sim_max + 1) * 255)
-                    item.setBackground(QBrush(QColor(0, 0, temp)))
+                    item.setBackground(QBrush(
+                        QColor(*rainbow_color(self.spectra_add.similarity.iloc[i, j] / sim_max))))
                     self.ui.page2_grid_list.setItem(self.spectra_add.similarity.shape[0] - i - 1, j, item)
 
     def update_first_page(self):

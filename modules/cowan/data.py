@@ -11,7 +11,7 @@ from fastdtw import fastdtw
 from matplotlib import pyplot as plt
 from plotly.offline import plot
 from scipy.interpolate import interp1d
-from scipy.signal import correlate
+from scipy.signal import correlate, find_peaks
 
 from .atom import Atomic
 
@@ -390,8 +390,8 @@ class SpectraAdd:
         plot(fig, filename=self.grid_path, auto_open=False)
 
     def get_similarity(self):
-        return self.similarity4(self.exp_data.data[['wavelength', 'intensity']],
-                                self.result[['wavelength', 'intensity']])
+        return self.spectrum_similarity3(self.exp_data.data[['wavelength', 'intensity']],
+                                         self.result[['wavelength', 'intensity']])
 
     def plot_html(self):
         x1 = self.exp_data.data['wavelength']
@@ -409,7 +409,7 @@ class SpectraAdd:
         plot(fig, filename=self.plot_path, auto_open=False)
 
     @staticmethod
-    def similarity(fax: pd.DataFrame, fbx: pd.DataFrame):
+    def spectrum_similarity1(fax: pd.DataFrame, fbx: pd.DataFrame):
         """
         计算两个光谱的相似度
         遍历实验光谱的每个点，找到模拟光谱中最近的点，计算距离，并求和
@@ -434,7 +434,7 @@ class SpectraAdd:
             res += min(np.sqrt((x1[i] - x2) ** 2 + (y1[i] - y2) ** 2))
         return res / fax.shape[0]
 
-    def similarity2(self, fax: pd.DataFrame, fbx: pd.DataFrame):
+    def spectrum_similarity2(self, fax: pd.DataFrame, fbx: pd.DataFrame):
         """
         计算两个光谱的相似度，根据R2进行判断
         Args:
@@ -455,20 +455,36 @@ class SpectraAdd:
         else:
             return R2
 
-    def similarity3(self, fax: pd.DataFrame, fbx: pd.DataFrame):
+    def spectrum_similarity3(self, fax: pd.DataFrame, fbx: pd.DataFrame):
         y1, y2 = self.get_y1y2(fax, fbx)
 
         distance, path = fastdtw(y1, y2)
         return distance
 
-    def similarity4(self, fax: pd.DataFrame, fbx: pd.DataFrame):
+    def spectrum_similarity4(self, fax: pd.DataFrame, fbx: pd.DataFrame):
         y1, y2 = self.get_y1y2(fax, fbx)
         corr = np.corrcoef(y1, y2)[0, 1]
-        return corr
+        return corr + 1
+
+    def spectrum_similarity5(self, fax: pd.DataFrame, fbx: pd.DataFrame):
+        """
+        峰值匹配法
+        :param fax:
+        :param fbx:
+        :return:
+        """
+        y1, y2 = self.get_y1y2(fax, fbx)
+        # 找出两个光谱数据的峰值位置
+        peaks1, _ = find_peaks(y1, height=0.5)
+        peaks2, _ = find_peaks(y2, height=0.5)
+
+        # 计算两个光谱数据峰值位置的相似性
+        match = np.intersect1d(peaks1, peaks2)
+        similarity = len(match) / min(len(peaks1), len(peaks2))
+        return similarity
 
     @staticmethod
     def get_y1y2(fax: pd.DataFrame, fbx: pd.DataFrame, min_x=None, max_x=None):
-
         col_names_a = fax.columns
         col_names_b = fbx.columns
         if (min_x is None) and (max_x is None):

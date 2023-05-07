@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.4.2
+## Created by: Qt User Interface Compiler version 6.5.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -1653,7 +1653,7 @@ class Ui_main_window(object):
 
         self.temperature_num = QSpinBox(self.groupBox_5)
         self.temperature_num.setObjectName(u"temperature_num")
-        self.temperature_num.setValue(5)
+        self.temperature_num.setValue(20)
 
         self.verticalLayout_10.addWidget(self.temperature_num)
 
@@ -1698,7 +1698,7 @@ class Ui_main_window(object):
 
         self.density_num = QSpinBox(self.groupBox_5)
         self.density_num.setObjectName(u"density_num")
-        self.density_num.setValue(3)
+        self.density_num.setValue(20)
 
         self.verticalLayout_10.addWidget(self.density_num)
 
@@ -1724,7 +1724,7 @@ class Ui_main_window(object):
         main_window.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(main_window)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1343, 22))
+        self.menubar.setGeometry(QRect(0, 0, 1343, 21))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menubar)

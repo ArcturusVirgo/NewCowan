@@ -3823,7 +3823,7 @@
              <item>
               <widget class="QSpinBox" name="temperature_num">
                <property name="value">
-                <number>5</number>
+                <number>20</number>
                </property>
               </widget>
              </item>
@@ -3873,7 +3873,7 @@
              <item>
               <widget class="QSpinBox" name="density_num">
                <property name="value">
-                <number>3</number>
+                <number>20</number>
                </property>
               </widget>
              </item>
@@ -3914,7 +3914,7 @@
      <x>0</x>
      <y>0</y>
      <width>1343</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">

@@ -1,23 +1,18 @@
-# from pathlib import Path
-#
-# import pandas as pd
-# import plotly.graph_objects as go
-# from matplotlib import pyplot as plt
-# from plotly.offline import plot
-#
-# df = pd.DataFrame({'x': [1, 2, 3, 4, 5], 'y': [1, 2, 3, 4, 5]})
-#
-# trace1 = go.Heatmap(x=df.columns, y=df.index, z=df.values)
-# data = [trace1]
-# layout = go.Layout()
-# fig = go.Figure(data=data, layout=layout)
-# plot(fig, filename=Path.cwd().joinpath('a.html').as_posix(), auto_open=True)
-
-# import
-#
-# i = datetime.datetime.now()  # 获取当前时间
-# print('今天是{}月{}日{}点{}分{}秒'.format(i.month, i.day, i.hour, i.minute, i.second))
 import numpy as np
+import matplotlib.pyplot as plt
 
-a = np.array([1,2,3,4,5])
-print('{:.2f}'.format(a[0]))
+# 生成模拟光谱数据和实验光谱数据
+x = np.arange(0, 10, 0.01)
+sim_spectrum = np.sin(x) + np.random.normal(0, 0.1, size=len(x))
+exp_spectrum = np.cos(x) + np.random.normal(0, 0.1, size=len(x))
+
+# 计算模拟光谱数据和实验光谱数据的相关性
+corr_coef = np.corrcoef(sim_spectrum, exp_spectrum)[0, 1]
+
+# 绘制模拟光谱数据和实验光谱数据的图像
+plt.plot(x, sim_spectrum, label='Simulated spectrum')
+plt.plot(x, exp_spectrum, label='Experimental spectrum')
+plt.legend()
+plt.show()
+
+print('Correlation coefficient:', corr_coef)
