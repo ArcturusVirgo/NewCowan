@@ -1,43 +1,18 @@
-# from cowan.input_files import *
-#
-# in36 = In36(13, 0)
-# in36.add_configuration('1s01 2s02')
-# in36.add_configuration('1s01 2s02')
-# print(list(zip(*in36.configuration_card))[-1])
-# import pandas as pd
-#
-# # print('cowan'.split(' '))
-# # a = {1: 2, 2: 3, 3: 4}
-# # a.pop(1)
-# # print(a)
-#
-# df = pd.DataFrame({
-#     '1': [1, 2, 3, 4, 5],
-#     '2': [1, 2, 3, 4, 5]
-# })
-# for x, y in zip(df['1'], df['2']):
-#     print(x, y)
-from pathlib import Path
+import numpy as np
+import matplotlib.pyplot as plt
 
-from cowan.atom import Atomic
-from cowan.run import Run
+# 生成模拟光谱数据和实验光谱数据
+x = np.arange(0, 10, 0.01)
+sim_spectrum = np.sin(x) + np.random.normal(0, 0.1, size=len(x))
+exp_spectrum = np.cos(x) + np.random.normal(0, 0.1, size=len(x))
 
-# from pathlib import Path
-#
-# import shutil
-#
-# p = Path('./123/222').joinpath('213')
-# p.mkdir(parents=False)
-#
-# shutil.rmtree(p)
+# 计算模拟光谱数据和实验光谱数据的相关性
+corr_coef = np.corrcoef(sim_spectrum, exp_spectrum)[0, 1]
 
-#
-# l = [1, 2, 3]
+# 绘制模拟光谱数据和实验光谱数据的图像
+plt.plot(x, sim_spectrum, label='Simulated spectrum')
+plt.plot(x, exp_spectrum, label='Experimental spectrum')
+plt.legend()
+plt.show()
 
-
-# l.pop(0)
-# print(l)
-
-element = Atomic(13, 3)
-# element.arouse_electron('2p', '3d')
-print(element.get_configuration())
+print('Correlation coefficient:', corr_coef)

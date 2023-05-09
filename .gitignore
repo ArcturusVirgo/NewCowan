@@ -125,4 +125,6 @@ dmypy.json
 
 .idea/
 
-program/result/
+
+
+result.json
