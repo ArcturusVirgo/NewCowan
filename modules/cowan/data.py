@@ -8,10 +8,9 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from fastdtw import fastdtw
-from matplotlib import pyplot as plt
 from plotly.offline import plot
 from scipy.interpolate import interp1d
-from scipy.signal import correlate, find_peaks
+from scipy.signal import find_peaks
 
 from .atom import Atomic
 
@@ -371,8 +370,6 @@ class SpectraAdd:
         self.similarity = pd.DataFrame(res)
         self.similarity.columns = list(map(lambda x: '{:.3f}'.format(x), t_values))
         self.similarity.index = list(map(lambda x: '{:.3e}'.format(x), n_values))
-        # print(self.grid_data.shape)
-        # print(n_values.shape[0])
 
         self.plot_grid()
 
