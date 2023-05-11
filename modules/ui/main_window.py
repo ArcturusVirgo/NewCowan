@@ -1746,7 +1746,7 @@ class Ui_main_window(object):
 
         self.retranslateUi(main_window)
 
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(0)
         self.tabWidget.setCurrentIndex(0)
 
 
@@ -1934,7 +1934,7 @@ class Ui_main_window(object):
         self.auto_write_in36.setText(QCoreApplication.translate("main_window", u"\u81ea\u52a8", None))
         self.manual_write_in36.setText(QCoreApplication.translate("main_window", u"\u624b\u52a8", None))
 #if QT_CONFIG(tooltip)
-        self.configuration_edit.setToolTip(QCoreApplication.translate("main_window", u"<html><head/><body><p><br/></p></body></html>", None))
+        self.configuration_edit.setToolTip("")
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(statustip)
         self.configuration_edit.setStatusTip("")

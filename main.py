@@ -295,6 +295,7 @@ class MainWindow(QMainWindow):
         dialog_layout.addWidget(text_browser)
         dialog.setLayout(dialog_layout)
 
+        self.get_in36_control_card()
         in36 = self.in36.get_in36_text()
 
         temp = '↓         ↓         ↓         ↓         ↓         ↓         ↓         ↓         \n'
@@ -314,10 +315,11 @@ class MainWindow(QMainWindow):
         dialog_layout.addWidget(text_browser)
         dialog.setLayout(dialog_layout)
 
-        in36 = self.in2.get_in2_text()
+        self.get_in2_control_card()
+        in2 = self.in2.get_in2_text()
 
         temp = '↓         ↓         ↓         ↓         ↓         ↓         ↓         ↓         \n'
-        text_browser.setText(temp + in36)
+        text_browser.setText(temp + in2)
         text_browser.setStyleSheet('font: 12pt "Consolas";')
 
         dialog.setWindowModality(Qt.ApplicationModal)
@@ -438,9 +440,6 @@ class MainWindow(QMainWindow):
         self.slot_page2_plot_spectrum()
 
     def get_in36_control_card(self):
-        """
-        二级函数
-        """
         v0 = '{:>1}'.format(self.ui.in36_1.text())
         v1 = '{:>1}'.format(self.ui.in36_2.text())
         v2 = '{:>1}'.format(self.ui.in36_3.text())
@@ -506,6 +505,7 @@ class MainWindow(QMainWindow):
         self.in2.input_card = temp
 
     def update_atom_obj_about(self):
+        fun_name = list(map(lambda x: x[3], inspect.stack()))
         # 改变元素选择器
         self.ui.atomic_num.setCurrentIndex(self.atom.num - 1)
         self.ui.atomic_name.setCurrentIndex(self.atom.num - 1)
@@ -531,6 +531,9 @@ class MainWindow(QMainWindow):
         self.ui.in36_configuration_view.setColumnCount(3)
         self.ui.in36_configuration_view.setHorizontalHeaderLabels(['宇称', '原子状态', '组态'])
         # 更新in36对象的属性
+        if 'slot_atomic_num' in fun_name or 'slot_atomic_ion' in fun_name or 'slot_atomic_symbol' in fun_name or \
+                'slot_atomic_name' in fun_name:
+            self.in36.configuration_card = []
         self.in36.atomic_num = self.atom.num
         self.in36.atomic_ion = self.atom.ion
 
@@ -598,17 +601,9 @@ class MainWindow(QMainWindow):
             self.ui.page2_selection_list.addItem(QListWidgetItem(value))
 
     def update_spectra_add_obj_about(self):
-        def rainbow_color(x):
-            camp = matplotlib.colormaps['rainbow']
-            rgba = camp(x)
-            return int(rgba[0] * 255), int(rgba[1] * 255), int(rgba[2] * 255), int(rgba[3] * 255)
-
+        fun_name = list(map(lambda x: x[3], inspect.stack()))
         # 如果是网格计算，就不绘图
-        flag = True
-        for frame in inspect.stack():
-            if frame[3] == 'slot_page2_cal_grid':
-                flag = False
-        if flag:
+        if 'slot_page2_cal_grid' not in fun_name:
             self.ui.page2_add_spectrum_web.load(QUrl.fromLocalFile(self.spectra_add.plot_path))
         # 绘制网格计算相关的东西
         if self.spectra_add.grid_data:
@@ -714,7 +709,7 @@ class LoginWindow(QWidget):
         self.main_window.show()
 
     def slot_delete_project(self):
-        key = self.ui.project_list.currentIndex().init_data()
+        key = self.ui.project_list.currentIndex().data()
         path = Path(self.project_data[key]['path'])
         shutil.rmtree(path)
         self.project_data.pop(key)
@@ -756,6 +751,6 @@ class LoginWindow(QWidget):
 if __name__ == '__main__':
     app = QApplication([])
     # window = LoginWindow()  # 启动登陆页面
-    window = MainWindow(Path('F:/Cowan/Al'), True)  # 启动主界面
+    window = MainWindow(Path('F:/Cowan/Al'), False)  # 启动主界面
     window.show()
     app.exec()

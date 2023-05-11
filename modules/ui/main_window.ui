@@ -79,7 +79,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page">
        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,4">
@@ -3190,7 +3190,7 @@
                 <bool>false</bool>
                </property>
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string/>
                </property>
                <property name="statusTip">
                 <string/>
