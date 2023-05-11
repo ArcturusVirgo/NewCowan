@@ -1,42 +1,22 @@
-import numpy as np
-import cupy as cp
+import pycuda.driver as drv
+import pycuda.tools, pycuda.autoinit, numpy
+import numpy.linalg as la
+from pycuda.compiler import SourceModule
 
+mod = SourceModule("""
+__global__ void multiply_them(float *dest, float *a, float *b)
+{
+  const int i = threadIdx.x;
+  dest[i] = a[i] * b[i];
+}
+""")
 
-def __complex_cal_gpu(wave: float,
-                      new_intensity: np.array,
-                      fwhmgauss: float,
-                      new_wavelength: np.array,
-                      population: np.array,
-                      new_J: np.array):
-    tt = new_intensity / cp.sqrt(2 * cp.pi) / fwhmgauss * 2.355 * cp.exp(
-        -2.355 ** 2 * (new_wavelength - wave) ** 2 / fwhmgauss ** 2 / 2)
-    ss = (new_intensity / (2 * new_J + 1)) * 2 * fwhmgauss / (
-            2 * cp.pi * ((new_wavelength - wave) ** 2 + cp.power(2 * fwhmgauss, 2) / 4))
-    uu = (new_intensity * population / (2 * new_J + 1)) * 2 * fwhmgauss / (
-            2 * cp.pi * ((new_wavelength - wave) ** 2 + cp.power(2 * fwhmgauss, 2) / 4))
+multiply_them = mod.get_function("multiply_them")
 
-    return tt.sum(), ss.sum(), uu.sum()
+a = numpy.random.randn(400).astype(numpy.float32)
+b = numpy.random.randn(400).astype(numpy.float32)
 
+dest = numpy.zeros_like(a)
+multiply_them(drv.Out(dest), drv.In(a), drv.In(b), block=(400, 1, 1))
 
-__complex_cal_gpu = cp.cuda.jit()(__complex_cal_gpu)
-
-
-def complex_cal(wave: float,
-                new_intensity: np.array,
-                fwhmgauss: float,
-                new_wavelength: np.array,
-                population: np.array,
-                new_J: np.array):
-    new_intensity_gpu = cp.asarray(new_intensity)
-    new_wavelength_gpu = cp.asarray(new_wavelength)
-    population_gpu = cp.asarray(population)
-    new_J_gpu = cp.asarray(new_J)
-
-    tt_gpu, ss_gpu, uu_gpu = __complex_cal_gpu(wave, new_intensity_gpu, fwhmgauss, new_wavelength_gpu, population_gpu,
-                                               new_J_gpu)
-
-    tt = cp.asnumpy(tt_gpu)
-    ss = cp.asnumpy(ss_gpu)
-    uu = cp.asnumpy(uu_gpu)
-
-    return tt, ss, uu
+print(dest - a * b)
