@@ -750,7 +750,7 @@ class LoginWindow(QWidget):
 
 if __name__ == '__main__':
     app = QApplication([])
-    # window = LoginWindow()  # 启动登陆页面
-    window = MainWindow(Path('F:/Cowan/Al'), False)  # 启动主界面
+    window = LoginWindow()  # 启动登陆页面
+    # window = MainWindow(Path('F:/Cowan/Al'), True)  # 启动主界面
     window.show()
     app.exec()
