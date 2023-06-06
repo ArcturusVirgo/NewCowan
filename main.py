@@ -1,14 +1,7 @@
-import asyncio
-import colorsys
 import inspect
 import sys
 import shelve
-from concurrent.futures import ProcessPoolExecutor
-
-import matplotlib
-import pandas as pd
 from PySide6.QtWidgets import QAbstractItemView, QFileDialog, QDialog, QTextBrowser, QMessageBox
-from matplotlib import cm
 
 from modules import *
 
