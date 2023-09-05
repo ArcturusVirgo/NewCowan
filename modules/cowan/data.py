@@ -2,7 +2,7 @@ import asyncio
 import os
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 import numpy as np
 import pandas as pd
@@ -27,7 +27,7 @@ class ExpData:
         self.filepath: Path = filepath
 
         self.data: pd.DataFrame | None = None
-        self.x_range: List[float] | None = None
+        self.x_range: Optional[List[float]] = None
 
         self.__read_file()
         self.__plot_html()
@@ -143,9 +143,9 @@ class Widen:
         self.plot_path_gauss = (project_path / f'figure/gauss/{self.name}.html').as_posix()
         self.plot_path_cross_NP = (project_path / f'figure/cross_NP/{self.name}.html').as_posix()
         self.plot_path_cross_P = (project_path / f'figure/cross_P/{self.name}.html').as_posix()
-        self.plot_path_by_group_gauss: dict | None = None
-        self.plot_path_by_group_cross_NP: dict | None = None
-        self.plot_path_by_group_cross_P: dict | None = None
+        self.plot_path_by_group_gauss: Optional[dict] = None
+        self.plot_path_by_group_cross_NP: Optional[dict] = None
+        self.plot_path_by_group_cross_P: Optional[dict] = None
 
         self.delta_lambda: float = delta_lambda
 
@@ -158,7 +158,7 @@ class Widen:
 
     def widen(self,
               temperature: float,
-              data: pd.DataFrame | None = None,
+              data: Optional[pd.DataFrame]= None,
               save_in_memory: bool = True
               ):
         """
@@ -312,7 +312,7 @@ class SpectraAdd:
         self.plot_path = self.project_path.joinpath('figure/add.html').as_posix()
         self.grid_path = self.project_path.joinpath('figure/grid.html').as_posix()
         self.similarity: pd.DataFrame | None = None
-        self.grid_data: Dict | None = None
+        self.grid_data: Optional[Dict] = None
 
         self.result: pd.DataFrame | None = None
 

@@ -1,6 +1,8 @@
 import inspect
 import sys
 import shelve
+from typing import Optional
+
 from PySide6.QtWidgets import QAbstractItemView, QFileDialog, QDialog, QTextBrowser, QMessageBox
 
 from modules import *
@@ -41,16 +43,16 @@ class MainWindow(QMainWindow):
         self.WORKING_PATH = Path.cwd()
 
         self.recorder = Recorder(self.PROJECT_PATH)
-        self.atom: Atomic | None = None
+        self.atom: Optional[Atomic] = None
         self.in36: In36 = In36()
         self.in2: In2 = In2()
-        self.exp_data: ExpData | None = None
-        self.run: Run | None = None
-        self.cal_data: CalData | None = None
-        self.widen: Widen | None = None
-        self.spectra_add: SpectraAdd | None = None
+        self.exp_data: Optional[ExpData] = None
+        self.run: Optional[Run] = None
+        self.cal_data: Optional[CalData] = None
+        self.widen: Optional[Widen] = None
+        self.spectra_add: Optional[SpectraAdd] = None
 
-        self.v_line: VerticalLine | None = None
+        self.v_line: Optional[VerticalLine] = None
 
         # 初始化
         self.init()
@@ -78,11 +80,11 @@ class MainWindow(QMainWindow):
         # 隐藏不必要的按钮
         # self.ui.page_up.hide()
         # self.ui.page_down.hide()
+        #
 
     def bind_slot(self):
-        # 页面切换按钮
-        self.ui.page_up.clicked.connect(lambda x: self.ui.stackedWidget.setCurrentIndex(0))
-        self.ui.page_down.clicked.connect(lambda x: self.ui.stackedWidget.setCurrentIndex(1))
+        # 设置左侧列表与右侧页面切换之间的关联
+        self.ui.navigation.currentRowChanged.connect(self.ui.stackedWidget.setCurrentIndex)
 
         # 菜单栏
         self.ui.save_project.triggered.connect(self.slot_save_project)
@@ -656,7 +658,7 @@ class LoginWindow(QWidget):
 
         self.project_data: dict = {}
         self.temp_path: str = ''
-        self.main_window: MainWindow | None = None
+        self.main_window: Optional[MainWindow] = None
 
         self.init_UI()
 
@@ -743,7 +745,7 @@ class LoginWindow(QWidget):
 
 if __name__ == '__main__':
     app = QApplication([])
-    window = LoginWindow()  # 启动登陆页面
-    # window = MainWindow(Path('F:/Cowan/Al'), True)  # 启动主界面
+    # window = LoginWindow()  # 启动登陆页面
+    window = MainWindow(Path('F:/Cowan/Al'), False)  # 启动主界面
     window.show()
     app.exec()

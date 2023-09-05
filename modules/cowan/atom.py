@@ -266,7 +266,7 @@ class Atomic:
 
 
 if __name__ == '__main__':
-    a = Atomic(13, 1)
-    aaa = a.get_ion_abundance2(25.6, 3.15e20)
-    for ii, v in enumerate(aaa):
-        print('{}: {:.4f}'.format(ii, v))
+    a = Atomic(19, 0)
+    # aaa = a.get_ion_abundance2(25.6, 3.15e20)
+    # for ii, v in enumerate(aaa):
+    #     print('{}: {:.4f}'.format(ii, v))

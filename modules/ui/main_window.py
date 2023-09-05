@@ -29,7 +29,7 @@ class Ui_main_window(object):
     def setupUi(self, main_window):
         if not main_window.objectName():
             main_window.setObjectName(u"main_window")
-        main_window.resize(1343, 883)
+        main_window.resize(1334, 883)
         main_window.setMinimumSize(QSize(0, 0))
         main_window.setMaximumSize(QSize(16777215, 16777215))
         self.action = QAction(main_window)
@@ -58,28 +58,19 @@ class Ui_main_window(object):
         self.centralwidget = QWidget(main_window)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setEnabled(True)
-        self.verticalLayout = QVBoxLayout(self.centralwidget)
-        self.verticalLayout.setSpacing(0)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout = QHBoxLayout()
+        self.centralwidget.setMinimumSize(QSize(0, 0))
+        self.horizontalLayout = QHBoxLayout(self.centralwidget)
+        self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.horizontalSpacer = QSpacerItem(818, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalLayout.setContentsMargins(0, -1, -1, -1)
+        self.navigation = QListWidget(self.centralwidget)
+        QListWidgetItem(self.navigation)
+        QListWidgetItem(self.navigation)
+        self.navigation.setObjectName(u"navigation")
+        self.navigation.setMinimumSize(QSize(50, 0))
+        self.navigation.setMaximumSize(QSize(100, 16777215))
 
-        self.horizontalLayout.addItem(self.horizontalSpacer)
-
-        self.page_up = QPushButton(self.centralwidget)
-        self.page_up.setObjectName(u"page_up")
-
-        self.horizontalLayout.addWidget(self.page_up)
-
-        self.page_down = QPushButton(self.centralwidget)
-        self.page_down.setObjectName(u"page_down")
-
-        self.horizontalLayout.addWidget(self.page_down)
-
-
-        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.horizontalLayout.addWidget(self.navigation)
 
         self.stackedWidget = QStackedWidget(self.centralwidget)
         self.stackedWidget.setObjectName(u"stackedWidget")
@@ -1719,12 +1710,12 @@ class Ui_main_window(object):
 
         self.stackedWidget.addWidget(self.page_2)
 
-        self.verticalLayout.addWidget(self.stackedWidget)
+        self.horizontalLayout.addWidget(self.stackedWidget)
 
         main_window.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(main_window)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1343, 21))
+        self.menubar.setGeometry(QRect(0, 0, 1334, 21))
         self.menu = QMenu(self.menubar)
         self.menu.setObjectName(u"menu")
         self.menu_2 = QMenu(self.menubar)
@@ -1766,8 +1757,15 @@ class Ui_main_window(object):
         self.action_5.setText(QCoreApplication.translate("main_window", u"\u52a0\u8f7d\u9879\u76ee", None))
         self.save_project.setText(QCoreApplication.translate("main_window", u"\u4fdd\u5b58\u9879\u76ee", None))
         self.exit_project.setText(QCoreApplication.translate("main_window", u"\u9000\u51fa", None))
-        self.page_up.setText(QCoreApplication.translate("main_window", u"\u4e0a\u4e00\u9875", None))
-        self.page_down.setText(QCoreApplication.translate("main_window", u"\u4e0b\u4e00\u9875", None))
+
+        __sortingEnabled = self.navigation.isSortingEnabled()
+        self.navigation.setSortingEnabled(False)
+        ___qlistwidgetitem = self.navigation.item(0)
+        ___qlistwidgetitem.setText(QCoreApplication.translate("main_window", u"1", None));
+        ___qlistwidgetitem1 = self.navigation.item(1)
+        ___qlistwidgetitem1.setText(QCoreApplication.translate("main_window", u"2", None));
+        self.navigation.setSortingEnabled(__sortingEnabled)
+
 #if QT_CONFIG(tooltip)
         self.in36_text_1.setToolTip(QCoreApplication.translate("main_window", u"<html><head/><body><p><br/></p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
